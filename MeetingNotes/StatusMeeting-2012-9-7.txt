@@ -1,0 +1,31 @@
+Agenda/Notes
+1.	What we have done
+	a.	Review task status (GitHub: https://github.com/maowenzhang/FWRG )
+	b.	Simple & quick internal sharing
+---------------------
+	prepare project GitHub sites and accounts
+	javascript related contents
+	learning jwebsocket
+	learning jquery 
+	coding practice - write solid front-end codes
+	learning server js (Node.js: http://www.nodebeginner.org/#javascript-and-nodejs)
+	
+2.	Any issue we meet
+None
+
+3.	What we plan to do
+	a.	For porker game project
+---------------------
+Design (research) (: design doc + spec)
+ - Jason: websocket demo + connected with web server
+ - Andre: draft spec (add priority, referece other porker game's design) (CANVAS)
+ - Dejun: define workflow/logics of porker game to spec, research 3rd party (CANVAS)
+ - Lori: web server, connected with websocket
+ - Bruce: TBD
+---------------------
+	
+	b.	For technical sharing (Date TBD)
+ - JQeury + JS + CSS + HTML
+ - Websocket (HTML5)
+ - CANVAS (Basic graphics, SVG, ...)
+ 
