@@ -1,0 +1,21 @@
+Meeting Notes: (Also posted to GitHub)
+1.	Action Items (Produce a basic prototype, before 10/8/2012)
+	•	Jason: setup communication between socket clients
+	•	Lori: PageLayout, DataModel
+	•	Dejun: Porkerlogic
+	•	Andre/Bruce: GameTableLayout  
+
+2.	What we have done Design (research) (design doc + spec)
+	•	Review task status (GitHub: https://github.com/maowenzhang/FWRG )
+		o	Researched web server (node.js, IIS)
+		o	Defined Porker Game rules
+		o	Researched something about node.js and web socket (socket.io) and setup basic node server
+		o	JWebsocket demo case (doesn’t work, use socket.io instead)
+	•	Identified design (components and technologies that we use)
+		i.	Refer to files in github under “docs”
+3.	Any issue we meet
+	•	None
+	•	For technical sharing (Date TBD)
+		o	- JQeury + JS + CSS + HTML
+		o	- Websocket (HTML5)
+		o	- CANVAS (Basic graphics, SVG, ...)
