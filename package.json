@@ -1,0 +1,14 @@
+{
+  "name": "FWRG",
+  "version": "0.0.0-1",
+  "subdomain": "Porker",
+  "dependencies": {
+    "socket.io" : "0.9.10"
+  },
+  "devDependencies": {
+  },
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "analyze": "false"
+}
