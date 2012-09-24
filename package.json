@@ -3,7 +3,8 @@
   "version": "0.0.0-1",
   "subdomain": "Porker",
   "dependencies": {
-    "socket.io" : "0.9.10"
+    "socket.io" : "0.9.10",
+	"ecstatic": "~0.1.5"
   },
   "devDependencies": {
   },

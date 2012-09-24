@@ -1,21 +1,25 @@
-var app = require('http').createServer(handler)
-  , io = require('socket.io').listen(app)
-  , fs = require('fs')
+var http = require('http');
+var ecstatic = require('ecstatic')(__dirname + '/public');
+var server = http.createServer(ecstatic);
 
-app.listen(80);
+var server = http.createServer(ecstatic)
+  , io = require('socket.io').listen(server)
+  , fs = require('fs');
 
-function handler (req, res) {
-  fs.readFile('src/index.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('1 Error loading index.html');
-    }
+server.listen(80);
 
-    res.writeHead(200);
-    res.end(data);
-  });
-}
+//function handler (req, res) {
+//  fs.readFile('src/index.html',
+//  function (err, data) {
+//    if (err) {
+//      res.writeHead(500);
+//      return res.end('1 Error loading index.html');
+//    }
+//
+//    res.writeHead(200);
+//    res.end(data);
+//  });
+//}
 
 io.sockets.on('connection', function (socket) {
   socket.emit('news', { hello: 'world' });
