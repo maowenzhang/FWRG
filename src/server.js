@@ -1,7 +1,7 @@
 var http = require('http');
 var ecstatic = require('ecstatic')(__dirname + '/public');
 var server = http.createServer(ecstatic);
-
+debugger
 var server = http.createServer(ecstatic)
   , io = require('socket.io').listen(server)
   , fs = require('fs');
