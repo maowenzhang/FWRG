@@ -1,0 +1,42 @@
+<html>
+    <head>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            $(function () {
+                var socket = io.connect('http://localhost:8888');
+
+                socket.on('connect', function () {
+                    $('#test').append($('<li>connected</li>'));
+
+                    //socket.emit('my other event', { my: 'data' });
+                });
+
+                socket.on('message', function (data) {
+                    $('#test').append($('<li></li>').text(data));
+                });
+
+                socket.on('disconnect', function () {
+                    $('#test').append($('<li>Disconnected</li>'));
+                });
+
+
+                $('#testInput').keypress(function (event) {
+                    if (event.which == 13) {
+                        event.preventDefault();
+                        socket.send($('#testInput').val());
+
+                        $('#test').append($('<li></li>').text($('#testInput').val()));
+                        $('#testInput').val('');
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        Incoming test:&nbsp;<ul id='test'></ul>
+        <br />
+
+        <input type="text" id = "testInput"/>
+    </body>
+</html>
