@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title> The ball game is placeholder, poker game is coming soon!</title>
+</head>
+<body>
+
+<div style="position: absolute; top: 50px; left: 50px;">
+<canvas id="canvas" width = "500" height = "500">
+Your browser does not support HTML5 Canvas
+</canvas>
+
+<form>
+Ball Number: <input id="textBox" text = "100" value="100" />
+<br>
+Canvas Width: <input type="range" id = "canvasWidth"
+				min = "0"
+				max = "1000"
+				step = "1"
+				value = "500"/>
+<br>
+Canvas Height: <input type = "range" id = "canvasHeight"
+				min = "0"
+				max = "1000"
+				step = "10"
+				value = "500"/>
+<br>
+</form>
+</div>
+
+<script type="text/javascript" src="3rd/jquery/js/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="3rd/jquery/js/jquery-ui-1.8.23.custom.min.js"></script>
+<script src="3rd/modernizr.js"></script>
+<script src="js/ballGame.js"></script>
+
+</body>
+</html>
