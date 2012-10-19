@@ -3,14 +3,16 @@
 function Card(suit, rank) {
     this.suit = suit; // Each card has a suit
     this.rank = rank; // and a rank
+	this.selected = false;
 }
 
 // These enumerated types define the suit and rank values
-Card.Suit = enumeration({ Clubs: 1, Diamonds: 2, Hearts: 3, Spades: 4 });
+Card.Suit = enumeration({ Diamonds: 1, Clubs: 2, Hearts: 3, Spades: 4, Jokers: 5});
 Card.Rank = enumeration({
     Two: 2, Three: 3, Four: 4, Five: 5, Six: 6,
     Seven: 7, Eight: 8, Nine: 9, Ten: 10,
-    Jack: 11, Queen: 12, King: 13, Ace: 14
+    Jack: 11, Queen: 12, King: 13, Ace: 14,
+	BlackJoker: 15, RedJoker: 16
 });
 
 // Define a textual representation for a card
@@ -42,8 +44,12 @@ function Deck() {
     var cards = this.cards = []; // A deck is just an array of cards
     Card.Suit.foreach(function (s) { // Initialize the array
         Card.Rank.foreach(function (r) {
-            cards.push(new Card(s, r));
+			if(s.value < 5 && r.value < 15 ||
+			   s.value == 5 && r.value > 14) {
+				cards.push(new Card(s, r));
+			}
         });
+		
     });
 }
 
