@@ -1,6 +1,7 @@
 
 // Define a class to represent a playing card
 function Card(suit, rank) {
+	this.id = suit + '-' + rank;
     this.suit = suit; // Each card has a suit
     this.rank = rank; // and a rank
 	this.selected = false;

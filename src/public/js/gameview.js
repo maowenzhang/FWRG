@@ -3,6 +3,13 @@ function GameView(view) {
 // reference the object in paper.js.
 var Point = paper.Point;
 var Raster = paper.Raster;
+var project = paper.project;
+
+this.viewSize = view.size;
+this.center = view.center;
+this.margin = 10; //10px
+this.offset = 16;
+var self = this;
 
 function createImageElem(id, src, style)
 {
@@ -111,12 +118,7 @@ function getCardImgId(suit, rank)
 }
 
 function drawPlayers(players)
-{
-	var szCanvas = view.size;
-	var center = view.center;
-	var margin = 10; //10px
-	var offset = 16;
-	
+{	
 	var firstCard = document.getElementById('1-1');
 	//console.log(firstCard);
 	
@@ -135,40 +137,47 @@ function drawPlayers(players)
 		//       One player cannot see other's cards. Temporarily draw
 		//       them under the first player's view point.
 		if(i == 0) {
-			var totoalW = (cards.length-1)*offset + cardW;
-			var yOffset = margin + cardH/2;
-			x = (szCanvas.width - totoalW)/2;
-			y = szCanvas.height - yOffset;
+			var totoalW = (cards.length-1)*self.offset + cardW;
+			var yOffset = self.margin + cardH/2;
+			x = (self.viewSize.width - totoalW)/2;
+			y = self.viewSize.height - yOffset;
 			for(var j = 0; j < cards.length; ++j) {
 				suit = cards[j].suit.value;
 				rank = cards[j].rank.value;
 				id = getCardImgId(suit, rank);
 				//console.log(id);
 				card = new paper.Raster(document.getElementById(id));
-				card.position = new Point(x+j*offset, y);
+				card.name = suit + '-' + rank;
+				card.position = new Point(x+j*self.offset, y);
 			}
 			
-			x = (szCanvas.width - cardW*3 - margin*1.5)/2;
+			x = (self.viewSize.width - cardW*3 - self.margin*1.5)/2;
 			y = yOffset;
 			// The last 3 cards should be visible for all players.
 			var card1 = cards[cards.length-1];
-			card = new paper.Raster(document.getElementById(getCardImgId(card1.suit.value, card1.rank.value)));
+			id = getCardImgId(card1.suit.value, card1.rank.value);
+			card = new paper.Raster(document.getElementById(id));
 			card.position = new Point(x, y);
+			
 			var card2 = cards[cards.length-2];
-			card = new paper.Raster(document.getElementById(getCardImgId(card2.suit.value, card2.rank.value)));
-			card.position = new Point(x+cardW+margin/2, y);
+			id = getCardImgId(card2.suit.value, card2.rank.value);
+			card = new paper.Raster(document.getElementById(id));
+			card.position = new Point(x+cardW+self.margin/2, y);
+			
 			var card3 = cards[cards.length-3];
-			card = new paper.Raster(document.getElementById(getCardImgId(card3.suit.value, card3.rank.value)));
-			card.position = new Point(x+2*(cardW+margin/2), y);
+			id = getCardImgId(card3.suit.value, card3.rank.value);
+			card = new paper.Raster(document.getElementById(id));
+			card.position = new Point(x+2*(cardW+self.margin/2), y);
 			
 		} else {
-			var totalH = (cards.length-1)*offset + cardH;
-			x = i == 2 ? (offset+cardW/2) : (szCanvas.width-cardW/2-offset);
-			y = (szCanvas.height - totalH)/2;
+			var totalH = (cards.length-1)*self.offset + cardH;
+			x = i == 2 ? (self.offset+cardW/2) : (self.viewSize.width-cardW/2-self.offset);
+			y = (self.viewSize.height - totalH)/2;
 			// draw other players.
 			for(var j = 0; j < cards.length; ++j) {
 				card = new paper.Raster(document.getElementById('rear'));
-				card.position = new Point(x, y+j*offset);
+				card.name = 'rear'+j;
+				card.position = new Point(x, y+j*self.offset);
 			}
 		}
 	}
@@ -219,4 +228,37 @@ function initSeat()
 	var pt3 = center+vec3*dist;
 	createPlayerSeat(pt3, size, 'yellow', 'gray');
 }
+
+this.hitTest = function(point, options) {
+	var curHitObject = paper.project.hitTest(point, options);
+	console.log(curHitObject);
+	if(curHitObject && (curHitObject instanceof HitResult)) {
+		var hitObject = curHitObject.item;
+		console.log(hitObject);
+		return hitObject;
+	}
+	return null;
+}
+this.findCard = function(cards, findkey) {
+	for (var i = 0; i < cards.length; i++) {
+		var card = cards[i];
+		if (card.id == findkey)
+			return card;
+	}
+	return null;
+}
+
+// two useful function to extend the Array's functionality.
+Array.prototype.indexOf = function(val) {
+	for (var i = 0; i < this.length; i++) {
+		if (this[i] == val) return i;
+	}
+	return -1;
+};
+Array.prototype.remove = function(val) {
+	var index = this.indexOf(val);
+	if (index > -1) {
+		this.splice(index, 1);
+	}
+};
 }

@@ -12,18 +12,24 @@
 		var players = gameview.init();
         var hitObject = null;
         function onMouseDown(event) {
+			console.log(event.point);
 			//Test if any of the objects have been hit, and store the object
-			var curHitObject = paper.project.hitTest(event.point, 
-				{segments:true, stroke:true, fill: true, tolerance: 5});
-			console.log(hitObject);
-			if(curHitObject && (curHitObject instanceof HitResult)) {
-				hitObject = curHitObject.item;
-				console.log(hitObject);
+			var options = {segments:true, stroke:true, fill: true, tolerance: 5};
+			var hitObject = gameview.hitTest(event.point, options);
+			if(hitObject) {
+				//console.log(hitObject);
 				if(hitObject instanceof Raster) {
-					console.log('hit raster');
-					if(hitObject.image && hitObject.id != 'rear') {
-						hitObject.position.y = hitObject.position.y - offset;
-						players[0].cards[hitObject.id].selected = true;
+					if(hitObject.image && hitObject.name && hitObject.name.substring(0, 4) != 'rear') {
+						var card = gameview.findCard(players[0].cards, hitObject.name);
+						if(card) {
+							if(card.selected) {
+								hitObject.position.y = hitObject.position.y + gameview.offset;
+								card.selected = false;
+							} else {
+								hitObject.position.y = hitObject.position.y - gameview.offset;
+								card.selected = true;
+							}
+						}
 					}
 				} else {
 					//hitObject.fillColor = '#EEEEEE';

@@ -2391,7 +2391,7 @@ function(name) {
 		options = HitResult.getOptions(point, options);
 		var tempPt = point;
 		point = options.point = this._matrix._inverseTransform(options.point);
-		if(this.name=='raster')
+		if(this instanceof Raster)
 		{
 			point = options.point = tempPt;
 			var mtx = new Matrix();
@@ -2426,7 +2426,8 @@ function(name) {
 
 		return this._children || !(options.guides && !this._guide
 				|| options.selected && !this._selected)
-					? this._hitTest(point, options, this.name=='raster' ? this._matrix : null) : null;
+					? this._hitTest(point, options, 
+					      this instanceof Raster ? this._matrix : null) : null;
 	},
 
 	_hitTest: function(point, options) {
