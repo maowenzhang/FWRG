@@ -35,8 +35,7 @@ body {
 }
 */
 #example {
-	width:600px;
-	height:350px;
+	width:600px;	
 	position:relative;
 }
 
@@ -50,10 +49,10 @@ body {
 #frame {
 	position:absolute;
 	z-index:0;
-	width:739px;
-	height:341px;
+	width:620px;
+	height:305px;
 	top:-3px;
-	left:-80px;
+	left:-25px;
 }
 
 /*
@@ -167,9 +166,9 @@ body {
 
 /*
 	Footer
-*/
 
-#footer {
+
+#footer2 {
 	text-align:center;
 	width:580px;
 	margin-top:9px;
@@ -177,14 +176,14 @@ body {
 	border-top:1px solid #dfdfdf;
 }
 
-#footer p {
+#footer2 p {
 	margin:4.5px 0;
 	font-size:1.0em;
 }
-
+*/
 /*
 	Anchors
-*/
+
 
 a:link,a:visited {
 	color:#599100;
@@ -195,3 +194,5 @@ a:hover,a:active {
 	color:#599100;
 	text-decoration:underline;
 }
+
+*/
