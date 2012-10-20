@@ -39,9 +39,10 @@ function loadResources()
 	// rear
 	res[counter++] = createImageElem("rear", path+"rear.gif", "display: none;");
 	
-	// background
+	// avatar, background & lord
 	path = "res/img/";
 	res[counter++] = createImageElem("avatar", path+"avatar.png", "display: none;");
+	res[counter++] = createImageElem("avatar2", path+"avatar2.png", "display: none;");
 	res[counter++] = createImageElem("background", path+"background.png", "display: none;");
 	res[counter++] = createImageElem("Lord", path+"Lord.png", "display: none;");
 	
@@ -67,9 +68,13 @@ function getPlayersInfo()
 	// mimic 3 player and return to the caller
 	var players = [];
 	players[0] = new User("Lori");
-	players[0].isLord = true;
 	players[1] = new User("Andre");
 	players[2] = new User("Bruce");
+	
+	players[0].isLord = true;
+	players[0].avatar = 'avatar';
+	players[1].avatar = 'avatar2';
+	players[2].avatar = 'avatar';
 	
 	// new a deck for delivering cards
 	var deck = new Deck();
@@ -117,26 +122,41 @@ function getCardImgId(suit, rank)
 	return id;
 }
 
+function drawLordFlag(avatarPos, refVec) {
+	var lordImg = document.getElementById('Lord');
+	refVec = refVec.normalize(40+lordImg.height);
+	var lord = new paper.Raster(lordImg);
+	lord.position = new Point(avatarPos.x+refVec.x, avatarPos.y+refVec.y);
+	return lord;
+}
+
 function drawPlayers(players)
 {	
-	var firstCard = document.getElementById('1-1');
-	//console.log(firstCard);
+	var cardImg = document.getElementById('1-1');
+	//console.log(cardImg);
 	
-	var cardW = firstCard.width;
-	var cardH = firstCard.height;
+	var cardW = cardImg.width;
+	var cardH = cardImg.height;
 	//console.log(cardW, cardH);
 	
 	var card = null;
 	var x, y;
 	var suit, rank;
 	var id;
+	var avatarImg, avatarPos, refVec, playerName;
 	for(var i = 0; i < players.length; ++i) {
 		var player = players[i];
 		var cards = player.cards;
+		
+		// draw the avatar
+		avatarImg = document.getElementById(player.avatar);
+		avatar = new paper.Raster(avatarImg);
+		
 		// TODO: Consider drawing the player based on their own view.
 		//       One player cannot see other's cards. Temporarily draw
 		//       them under the first player's view point.
 		if(i == 0) {
+			// draw the cards of lord
 			var totoalW = (cards.length-1)*self.offset + cardW;
 			var yOffset = self.margin + cardH/2;
 			x = (self.viewSize.width - totoalW)/2;
@@ -150,6 +170,12 @@ function drawPlayers(players)
 				card.name = suit + '-' + rank;
 				card.position = new Point(x+j*self.offset, y);
 			}
+			
+			// calc the avatar pos for this player
+			x = avatarImg.width*2.5;
+			y = self.viewSize.height - avatarImg.height/2 - self.margin;
+			avatarPos = new Point(x, y);
+			refVec = new Point(1, -1);
 			
 			x = (self.viewSize.width - cardW*3 - self.margin*1.5)/2;
 			y = yOffset;
@@ -171,7 +197,8 @@ function drawPlayers(players)
 			
 		} else {
 			var totalH = (cards.length-1)*self.offset + cardH;
-			x = i == 2 ? (self.offset+cardW/2) : (self.viewSize.width-cardW/2-self.offset);
+			var offset = self.offset+cardW*2.5;
+			x = i == 2 ? offset : (self.viewSize.width-offset);
 			y = (self.viewSize.height - totalH)/2;
 			// draw other players.
 			for(var j = 0; j < cards.length; ++j) {
@@ -179,6 +206,37 @@ function drawPlayers(players)
 				card.name = 'rear'+j;
 				card.position = new Point(x, y+j*self.offset);
 			}
+			
+			// calc the avatar pos for this player
+			if(i == 2) {
+				x = offset/2;
+				y = self.viewSize.height/2;
+				avatarPos = new Point(x, y);
+				refVec = new Point(-1, -1);
+			} else {
+				x = self.viewSize.width-offset/2;
+				y = self.viewSize.height/2;
+				avatarPos = new Point(x, y);
+				refVec = new Point(1, -1);
+			}
+		}
+		
+		// set the position of the avatar
+		avatar.position = avatarPos;
+		
+		// draw the name of the player
+		playerName = new paper.PointText(new Point(avatar.position.x-avatarImg.width/2, avatar.position.y + avatarImg.height/2+self.margin));
+		playerName.content = player.name;
+		playerName.characterStyle = {
+			justification: 'center',
+			font: 'Arial Black',
+			fontSize: 12,
+			fillColor: 'white',
+		};
+
+		// draw a avartar to represent the lord if the play is lord.
+		if(player.isLord) {
+			drawLordFlag(avatarPos, refVec);
 		}
 	}
 }
