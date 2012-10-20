@@ -11,6 +11,12 @@ this.margin = 10; //10px
 this.offset = 16;
 var self = this;
 
+// track the active player, which needs to deliver cards or
+// pass.
+this.activePlayer = null;
+// store the hit test result.
+this.hitObject = null;
+
 function createImageElem(id, src, style)
 {
 	var img = document.createElement("img");
@@ -288,14 +294,14 @@ function initSeat()
 }
 
 this.hitTest = function(point, options) {
+	self.hitObject = null;
 	var curHitObject = paper.project.hitTest(point, options);
-	console.log(curHitObject);
+	//console.log(curHitObject);
 	if(curHitObject && (curHitObject instanceof HitResult)) {
-		var hitObject = curHitObject.item;
-		console.log(hitObject);
-		return hitObject;
+		self.hitObject = curHitObject.item;
+		//console.log(self.hitObject);
 	}
-	return null;
+	return self.hitObject;
 }
 this.findCard = function(cards, findkey) {
 	for (var i = 0; i < cards.length; i++) {

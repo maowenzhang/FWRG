@@ -10,7 +10,6 @@
 	
 		var gameview = new GameView(view);
 		var players = gameview.init();
-        var hitObject = null;
         function onMouseDown(event) {
 			console.log(event.point);
 			//Test if any of the objects have been hit, and store the object
@@ -40,22 +39,14 @@
 			}
         }
         function onMouseUp(event) {
-			if(event.delta.length == 0)
-			{
-				var curHitObject = paper.project.hitTest(event.point, 
-					{segments:true, stroke:true, fill: true, tolerance: 5});
-				console.log(hitObject);
-			}
-            if(hitObject) {
-				if(hitObject instanceof Raster) {
+            if(gameview.hitObject) {
+				if(gameview.hitObject instanceof Raster) {
 				} else {
 					//hitObject.fillColor = 'gray';
-					hitObject.strokeColor = 'yellow';
-					hitObject.strokeWidth = 1;
+					gameview.hitObject.strokeColor = 'yellow';
+					gameview.hitObject.strokeWidth = 1;
 				}
             }
-            hitObject = null;
-            //console.log("hit null");
         }
 	</script>
 	<style type="text/css">
