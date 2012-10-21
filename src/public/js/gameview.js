@@ -1,9 +1,10 @@
-function GameView(view) {
+function GameView(paper) {
 
 // reference the object in paper.js.
 var Point = paper.Point;
 var Raster = paper.Raster;
 var project = paper.project;
+var view = paper.view;
 
 this.viewSize = view.size;
 this.center = view.center;
@@ -165,7 +166,11 @@ function drawPlayers(players)
 			// draw the cards of lord
 			var totoalW = (cards.length-1)*self.offset + cardW;
 			var yOffset = self.margin + cardH/2;
-			x = (self.viewSize.width - totoalW)/2;
+			// PaperJs will draw raster at the image center,
+			// so add a distance of 'cardW/2'. The offset 0.5
+			// is to fix the pixel issue of canvas drawing. see
+			// http://code.anjanesh.net/2009/05/1-pixel-wide-line-parallel-to-axis-in.html
+			x = (self.viewSize.width - totoalW)/2 + cardW/2 + 0.5; 
 			y = self.viewSize.height - yOffset;
 			for(var j = 0; j < cards.length; ++j) {
 				suit = cards[j].suit.value;
@@ -183,7 +188,7 @@ function drawPlayers(players)
 			avatarPos = new Point(x, y);
 			refVec = new Point(1, -1);
 			
-			x = (self.viewSize.width - cardW*3 - self.margin*1.5)/2;
+			x = (self.viewSize.width - cardW*3 - self.margin*1.5)/2 + cardW/2;
 			y = yOffset;
 			// The last 3 cards should be visible for all players.
 			var card1 = cards[cards.length-1];
