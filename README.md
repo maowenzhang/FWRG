@@ -35,4 +35,4 @@ How to start
 
 7. open "http://localhost"
 
-8. for more, refer to doc “Project Information.doc”
+8. for more, refer to doc “Project Information.doc?
