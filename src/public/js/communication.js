@@ -1,17 +1,26 @@
 //var io = require('socket.io');
-$(function () {
-    var socket = io.connect('http://localhost:8888');
-    socket.on('connect', function () {
-        console.log("Client connected");
+var socket = io.connect('http://localhost:8888');
 
-        socket.emit('my other event', { my: 'data' });
-    });
+function sendUpdateToServer(type, data) {
+    socket.emit("update", type, data);
+}
 
-    socket.on('message', function (data) {
-        console.log(data);
-    });
+function sendStatusRequestToServer() {
+    socket.emit("statusRequest");
+}
 
-    socket.on('disconnect', function () {
-        console.log("Client disconnected");
-    });
-});
+function sendUserLogin(playername) {
+    sendUpdateToServer("login", playername);
+}
+
+function sendUserReady(playername) {
+    sendUpdateToServer("userReady", playername);
+}
+
+function sendUserProduce(pokerName) {
+    sendUpdateToServer("produce", pokerName);
+}
+
+function sendUserEnd(playername) {
+    sendUpdateToServer("end", playername);
+}
