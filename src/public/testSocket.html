@@ -2,8 +2,6 @@
     <head>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
-        <script src="http://localhost:8888/socket.io/socket.io.js"></script>
-        <!--<script src="js/communication.js"></script>-->
         <script>
             $(function () {
                 var socket = io.connect('http://localhost:8888');
@@ -14,79 +12,22 @@
                     //socket.emit('my other event', { my: 'data' });
                 });
 
-                socket.on('update', function (type, data) {
-                    $('#test').append($('<li></li>').text(type + " : " + data));
+                socket.on('message', function (data) {
+                    $('#test').append($('<li></li>').text(data));
                 });
 
                 socket.on('disconnect', function () {
                     $('#test').append($('<li>Disconnected</li>'));
                 });
 
-                function sendUpdateToServer(type, data) {
-                    socket.emit("update", type, data);
-                }
 
-                function sendStatusRequestToServer() {
-                    socket.emit("statusRequest");
-                }
-
-                function sendUserLogin(playername) {
-                    sendUpdateToServer("login", playername);
-                }
-
-                function sendUserReady(playername) {
-                    sendUpdateToServer("userReady", playername);
-                }
-
-                function sendUserProduce(pokerName) {
-                    sendUpdateToServer("produce", pokerName);
-                }
-
-                function sendUserEnd(playername) {
-                    sendUpdateToServer("end", playername);
-                }
-
-                $('#login').keypress(function (event) {
+                $('#testInput').keypress(function (event) {
                     if (event.which == 13) {
                         event.preventDefault();
+                        socket.send($('#testInput').val());
 
-                        sendUserLogin($('#login').val());
-
-                        $('#test').append($('<li></li>').text($('#login').val()));
-                        $('#login').val('');
-                    }
-                });
-
-                $('#ready').keypress(function (event) {
-                    if (event.which == 13) {
-                        event.preventDefault();
-
-                        sendUserReady($('#ready').val());
-
-                        $('#test').append($('<li></li>').text($('#ready').val()));
-                        $('#ready').val('');
-                    }
-                });
-
-                $('#produce').keypress(function (event) {
-                    if (event.which == 13) {
-                        event.preventDefault();
-
-                        sendUserProduce($('#produce').val());
-
-                        $('#test').append($('<li></li>').text($('#produce').val()));
-                        $('#produce').val('');
-                    }
-                });
-
-                $('#end').keypress(function (event) {
-                    if (event.which == 13) {
-                        event.preventDefault();
-
-                        sendUserEnd($('#end').val());
-
-                        $('#test').append($('<li></li>').text($('#end').val()));
-                        $('#end').val('');
+                        $('#test').append($('<li></li>').text($('#testInput').val()));
+                        $('#testInput').val('');
                     }
                 });
             });
@@ -96,12 +37,6 @@
         Incoming test:&nbsp;<ul id='test'></ul>
         <br />
 
-        UserName: <input type="text" id = "login"/>&nbsp;
-        <br />
-        Ready:    <input type="text" id = "ready"/>&nbsp;
-        <br />
-        Produce:  <input type="text" id = "produce"/>&nbsp;
-        <br />
-        End:      <input type="text" id = "end"/>&nbsp;
+        <input type="text" id = "testInput"/>
     </body>
 </html>

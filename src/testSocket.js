@@ -17,17 +17,18 @@ server.listen(8888);
 // listen
 io.listen(server).on('connection', function (socket) {
 
-    var currentData = "test";
-
     // connected
     socket.on('message', function (msg) {
         console.log('Received message from client', msg);
         socket.broadcast.emit('message', msg);
     });
 
-    // send data to all users
-    socket.on('update', function (type, data) {
-        console.log("Received messge are", type);
-        socket.broadcast.emit('update', type, data);
-    });
+    // disconnected
+//    client.on('disconnect', function () {
+//        console.log('Server has disconnected');
+//    });
+
+//    client.on('my other event', function (data) {
+//        console.log("The other event : " + data);
+//    });
 });
