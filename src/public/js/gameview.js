@@ -120,6 +120,7 @@ function GameView(paper) {
 		return lord;
 	}
 
+	// Now this function just draw the players info without the cards.
 	function drawPlayers(players)
 	{	
 		var card = null;
@@ -130,71 +131,18 @@ function GameView(paper) {
 		for(var i = 0; i < players.length; ++i) {
 			var player = players[i];
 			var cards = player.cards;
-			
 			// draw the avatar
 			avatarImg = document.getElementById(player.avatar);
 			avatar = new paper.Raster(avatarImg);
 			
-			// TODO: Consider drawing the player based on their own view.
-			//       One player cannot see other's cards. Temporarily draw
-			//       them under the first player's view point.
 			if(i == 0) {
-				// draw the cards of lord
-				var totoalW = (cards.length-1)*self.offset + self.cardW;
-				var yOffset = self.margin + self.cardH/2;
-				/*// PaperJs will draw raster at the image center,
-				// so add a distance of 'cardW/2'. The offset 0.5
-				// is to fix the pixel issue of canvas drawing. see
-				// http://code.anjanesh.net/2009/05/1-pixel-wide-line-parallel-to-axis-in.html
-				x = (self.viewSize.width - totoalW)/2 + cardW/2 + 0.5; 
-				y = self.viewSize.height - yOffset;
-				for(var j = 0; j < cards.length; ++j) {
-					suit = cards[j].suit.value;
-					rank = cards[j].rank.value;
-					id = getCardImgId(suit, rank);
-					//console.log(id);
-					card = new paper.Raster(document.getElementById(id));
-					card.name = suit + '-' + rank;
-					card.position = new Point(x+j*self.offset, y);
-				}*/
-				
 				// calc the avatar pos for this player
 				x = avatarImg.width*2.5;
 				y = self.viewSize.height - avatarImg.height/2 - self.margin;
 				avatarPos = new Point(x, y);
 				refVec = new Point(1, -1);
-				
-				/*x = (self.viewSize.width - cardW*3 - self.margin*1.5)/2 + cardW/2;
-				y = yOffset;
-				
-				// The last 3 cards should be visible for all players.
-				var card1 = cards[cards.length-1];
-				id = getCardImgId(card1.suit.value, card1.rank.value);
-				card = new paper.Raster(document.getElementById(id));
-				card.position = new Point(x, y);
-				
-				var card2 = cards[cards.length-2];
-				id = getCardImgId(card2.suit.value, card2.rank.value);
-				card = new paper.Raster(document.getElementById(id));
-				card.position = new Point(x+cardW+self.margin/2, y);
-				
-				var card3 = cards[cards.length-3];
-				id = getCardImgId(card3.suit.value, card3.rank.value);
-				card = new paper.Raster(document.getElementById(id));
-				card.position = new Point(x+2*(cardW+self.margin/2), y);
-				*/
 			} else {
-				var totalH = (cards.length-1)*self.offset + self.cardH;
 				var offset = self.offset+self.cardW*2.5;
-				x = i == 2 ? offset : (self.viewSize.width-offset);
-				y = (self.viewSize.height - totalH)/2;
-				/*// draw other players.
-				for(var j = 0; j < cards.length; ++j) {
-					card = new paper.Raster(document.getElementById('rear'));
-					card.name = 'rear'+j;
-					card.position = new Point(x, y+j*self.offset);
-				}*/
-				
 				// calc the avatar pos for this player
 				if(i == 2) {
 					x = offset/2;
@@ -232,7 +180,17 @@ function GameView(paper) {
 	var deck;
 	var tempPlayers;
 	var currentPlayer = 0;
-	
+
+	this._calcMyPositionInfo = function(numCards) {
+		var totalW = (numCards-1)*this.offset + this.cardW;
+		var offset = this.margin + this.cardH/2;
+		return {
+			totoalW: totalW,
+			yOffset: offset,
+			center: { x: (this.viewSize.width - totalW)/2, y: this.viewSize.height - offset }
+		};
+	}
+
 	this.init = function()
 	{
 		// 0. load resources.
@@ -249,6 +207,9 @@ function GameView(paper) {
 		this.cardW = cardImg.width;
 		this.cardH = cardImg.height;
 		
+		// some other useful location info
+		this.myPositionInfo = this._calcMyPositionInfo(20);
+
 		// 1. draw background, table
 		var bkg = new paper.Raster(document.getElementById("background"));
 		bkg.position = view.center;
@@ -268,11 +229,11 @@ function GameView(paper) {
 		
 		this.timerId = setInterval(this.deliverCards, 10);
 		
+		drawButtons();
+		
 		return players;
 	}
 
-
-	
 	function initSeat()
 	{
 		var center = view.center;
@@ -388,14 +349,13 @@ function GameView(paper) {
 			//       them under the first player's view point.
 			if(i == 0) {
 				// draw the cards of lord
-				var totoalW = (cards.length-1)*self.offset + self.cardW;
-				var yOffset = self.margin + self.cardH/2;
+
 				// PaperJs will draw raster at the image center,
 				// so add a distance of 'cardW/2'. The offset 0.5
 				// is to fix the pixel issue of canvas drawing. see
 				// http://code.anjanesh.net/2009/05/1-pixel-wide-line-parallel-to-axis-in.html
-				x = (self.viewSize.width - totoalW)/2 + self.cardW/2 + 0.5; 
-				y = self.viewSize.height - yOffset;
+				x = self.myPositionInfo.center.x; 
+				y = self.myPositionInfo.center.y;
 				for(var j = 0; j < cards.length; ++j) {
 					suit = cards[j].suit.value;
 					rank = cards[j].rank.value;
@@ -420,6 +380,23 @@ function GameView(paper) {
 		}
 	}
 
+	function drawButtons() {
+		var buttons = ['chupai', 'buchu', 'tishi'];
+		var btnImg = document.getElementById(buttons[0]);
+		var totalW = btnImg.width*3 + 2*self.offset;
+		var x = self.myPositionInfo.center.x - totalW/2;
+		var y = self.viewSize.height - self.cardH - 2*self.offset;
+		
+		var btn;
+		for(var i = 0; i < buttons.length; ++i)
+		{
+			var x1 = x + i * btnImg.width + i * self.offset;
+			btn = new paper.Raster(document.getElementById(buttons[i]));
+			btn.position = new Point(x1, y);
+		}
+		
+		view.draw();
+	}
 	
 	// two useful function to extend the Array's functionality.
 	Array.prototype.indexOf = function(val) {
