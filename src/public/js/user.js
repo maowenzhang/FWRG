@@ -1,14 +1,37 @@
 // Define user information
 function User(name) {
-	this.name = name; // Display name or name id?
-	this.sex;
-	this.avatar;
-	this.score;
-	this.cards = [];
-	this.active = false;
-	this.isLord = false;
+	this.name = name;
+	this.sex = "male";
+	this.avatar = "avatar1";
+	this.score = 0;
+}
+
+User.prototype.isNewUser = function() {
+	return true;
 }
 
 User.prototype.toString = function() {
 	return "user: " + this.name;
 }
+
+// Define player information, who is playing game
+function Player(name) {
+	User.call(this, name);
+	this.cards = [];
+	this.active = false;
+	this.isLord = false;
+}
+
+// Player derives from User
+Player.prototype = new User;
+
+// For test
+Player.prototype.allProperties = function() {
+	var info = "";
+	for(p in this) {
+		var prop = p + ": " + this[p] + "\n";
+		info = info + prop;
+	}
+	return info;
+}
+
