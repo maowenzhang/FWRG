@@ -187,7 +187,7 @@ function GameView(paper) {
 		return {
 			totoalW: totalW,
 			yOffset: offset,
-			center: { x: (this.viewSize.width - totalW)/2, y: this.viewSize.height - offset }
+			center: { x: (this.viewSize.width - totalW)/2 + this.cardW/2 + 0.5, y: this.viewSize.height - offset }
 		};
 	}
 
@@ -213,7 +213,7 @@ function GameView(paper) {
 		// 1. draw background, table
 		var bkg = new paper.Raster(document.getElementById("background"));
 		bkg.position = view.center;
-		bkg.scale(1.3);
+		//bkg.scale(1.3);
 		
 		//// 2. init seat (comment for game hall)
 		//initSeat();
@@ -228,8 +228,6 @@ function GameView(paper) {
 		deck.shuffle();		
 		
 		this.timerId = setInterval(this.deliverCards, 10);
-		
-		drawButtons();
 		
 		return players;
 	}
@@ -278,6 +276,7 @@ function GameView(paper) {
 		
 		if(deck.cards.length == 0) {
 			clearInterval(this.timerId);
+			drawButtons();
 			return;
 		}
 		//console.log(deck.cards.toString());
@@ -384,8 +383,8 @@ function GameView(paper) {
 		var buttons = ['chupai', 'buchu', 'tishi'];
 		var btnImg = document.getElementById(buttons[0]);
 		var totalW = btnImg.width*3 + 2*self.offset;
-		var x = self.myPositionInfo.center.x - totalW/2;
-		var y = self.viewSize.height - self.cardH - 2*self.offset;
+		var x = (self.viewSize.width - totalW)/2 + btnImg.width/2;
+		var y = self.viewSize.height - self.cardH - 3*self.offset;
 		
 		var btn;
 		for(var i = 0; i < buttons.length; ++i)
@@ -394,7 +393,6 @@ function GameView(paper) {
 			btn = new paper.Raster(document.getElementById(buttons[i]));
 			btn.position = new Point(x1, y);
 		}
-		
 		view.draw();
 	}
 	
