@@ -18,7 +18,7 @@ User.prototype.toString = function() {
 function Player(name) {
 	User.call(this, name);
 	this.cards = [];
-	this.active = false;
+	this.isActive = false;
 	this.isLord = false;
 }
 
