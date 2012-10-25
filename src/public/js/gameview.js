@@ -74,9 +74,9 @@ function GameView(paper) {
 	{
 		// mimic 3 player and return to the caller
 		var players = [];
-		players[0] = new User("Lori");
-		players[1] = new User("Andre");
-		players[2] = new User("Bruce");
+		players[0] = new Player("Lori");
+		players[1] = new Player("Andre");
+		players[2] = new Player("Bruce");
 		
 		players[0].isLord = true;
 		players[0].avatar = 'avatar';
