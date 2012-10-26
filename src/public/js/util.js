@@ -45,3 +45,25 @@ function inherit(p) {
     f.prototype = p; // Set its prototype property to p.
     return new f(); // Use f() to create an "heir" of p.
 }
+
+// Some useful functions to extend the Array's functionality.
+Array.prototype.indexOf = function(val) {
+	for (var i = 0; i < this.length; i++) {
+		if (this[i] == val) return i;
+	}
+	return -1;
+};
+Array.prototype.remove = function(val) {
+	var index = this.indexOf(val);
+	if (index > -1) {
+		this.splice(index, 1);
+	}
+};
+Array.prototype.contains = function(a, obj) {
+        for (var i = 0; i < a.length; i++) {
+            if (a[i] === obj) {
+                return true;
+            }
+        }
+        return false;
+    }
