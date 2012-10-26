@@ -275,7 +275,10 @@ function GameView(paper) {
 		// new a deck for delivering cards
 		
 		if(deck.cards.length == 0) {
-			clearInterval(this.timerId);
+			clearInterval(this.timerId);			
+			sort(tempPlayers[0]);
+
+			drawCardsWhenDeliver(tempPlayers);			
 			drawButtons();
 			return;
 		}
@@ -332,7 +335,33 @@ function GameView(paper) {
 			
 		view.draw();
 	}
+	
+	function sort(player)
+	{
+		// how to use the native sort function of array? 
+		// please correct it if you know
+		var sortedCards = [];
+		var cards = player.cards;
+		if(cards.length <= 1)
+			return;
 
+		while(cards.length > 0)
+		{
+			var card0 = cards[0];
+			for(var i = 1; i < cards.length; ++i)
+			{
+				var thisCard = cards[i];
+				if(card0.rank.value > thisCard.rank.value)
+					card0 = thisCard;
+			}
+			cards.remove(card0);
+			sortedCards.push(card0);
+		}
+		
+		for(var j = 0; j < sortedCards.length; ++j)
+			cards.push(sortedCards[j]);
+	}
+	
 	function drawCardsWhenDeliver(players)
 	{	
 		var card = null;
