@@ -17,6 +17,7 @@ function GameView(paper) {
 	this.activePlayer = null;
 	// store the hit test result.
 	this.hitObject = null;
+	var cardObjects = []; // record raster object of current player
 
 	function createImageElem(id, src, style)
 	{
@@ -177,9 +178,8 @@ function GameView(paper) {
 		}
 	}
 
-	var deck;
-	var tempPlayers;
 	var currentPlayer = 0;
+	var timerId;
 
 	this._calcMyPositionInfo = function(numCards) {
 		var totalW = (numCards-1)*this.offset + this.cardW;
@@ -220,14 +220,13 @@ function GameView(paper) {
 		
 		// 3. draw the cards of each players.
 		players = getPlayersInfo();
-		tempPlayers = players;
 		//console.log(players);
 		drawPlayers(players);
 		
 		deck = new Deck();
 		deck.shuffle();		
 		
-		this.timerId = setInterval(this.deliverCards, 10);
+		timerId = setInterval(this.deliverCards, 10);
 		
 		return players;
 	}
@@ -261,7 +260,7 @@ function GameView(paper) {
 		}
 		return self.hitObject;
 	}
-	this.findCard = function(cards, findkey) {
+	findCard = function(cards, findkey) {
 		for (var i = 0; i < cards.length; i++) {
 			var card = cards[i];
 			if (card.id == findkey)
@@ -269,16 +268,63 @@ function GameView(paper) {
 		}
 		return null;
 	}
-
+	
+	function getSelectedCards(player)
+	{
+		var selectedCards = [];
+		for (var i = 0; i < player.cards.length; i++) {
+			var card = player.cards[i];
+			if (card.selected)
+				selectedCards.push(card);
+		}
+		return selectedCards;
+	}
+	
+	var lastOutCards = [];
+	
+	this.handleMouseDownEvent = function(hitObject)
+	{
+		if(hitObject) {
+			//console.log(hitObject);
+			if(hitObject instanceof Raster) {
+				if(hitObject.image && hitObject.name && hitObject.name.substring(0, 4) != 'rear') {
+				
+					if(hitObject.name == "chupai")
+					{
+						takeCardsOut(players[0]);		
+					}
+					else
+					{
+						// active player
+						var card = findCard(players[0].cards, hitObject.name);
+						if(card) {
+							if(card.selected) {
+								hitObject.position.y = hitObject.position.y + this.offset;
+								card.selected = false;
+							} else {
+								hitObject.position.y = hitObject.position.y - this.offset;
+								card.selected = true;
+							}
+						}
+					}
+				}
+			} else {
+				//hitObject.fillColor = '#EEEEEE';
+				hitObject.strokeColor = 'white';
+				hitObject.strokeWidth = 4;
+				//console.log(hitObject);
+			}
+		}
+	}
+	
 	this.deliverCards = function ()
 	{
 		// new a deck for delivering cards
 		
-		if(deck.cards.length == 0) {
-			clearInterval(this.timerId);			
-			sort(tempPlayers[0]);
-
-			drawCardsWhenDeliver(tempPlayers);			
+		if(deck.cards.length == 0) {			
+	
+			clearInterval(timerId);			
+			sort(players[0]);
 			drawButtons();
 			return;
 		}
@@ -291,11 +337,11 @@ function GameView(paper) {
 			for(i = 0; i < remainCards; ++i)
 			{
 				// Assume the first player is the lord.				
-				if(tempPlayers[currentPlayer].isLord) {
-					tempPlayers[currentPlayer].cards.push(deck.cards[i]);					
+				if(players[0].isLord) {
+					players[0].cards.push(deck.cards[i]);
+					drawCard(deck.cards[i], 0);
 				}
-			}
-			drawCardsWhenDeliver(tempPlayers);
+			}			
 			
 			var yOffset = self.margin + self.cardH/2;
 			var x = (self.viewSize.width - self.cardW*3 - self.margin*1.5)/2 + self.cardW/2;
@@ -305,8 +351,7 @@ function GameView(paper) {
 			var card1 = deck.cards[deck.cards.length-1];
 			id = getCardImgId(card1.suit.value, card1.rank.value);
 			card = new paper.Raster(document.getElementById(id));
-			card.position = new Point(x, y);
-			
+			card.position = new Point(x, y);			
 			
 			var card2 = deck.cards[deck.cards.length-2];
 			id = getCardImgId(card2.suit.value, card2.rank.value);
@@ -320,13 +365,13 @@ function GameView(paper) {
 			
 			deck.cards.remove(deck.cards[0]);
 			deck.cards.remove(deck.cards[0]);
-			deck.cards.remove(deck.cards[0]);
+			deck.cards.remove(deck.cards[0]);			
 		}
 		else
 		{
-			tempPlayers[currentPlayer].cards.push(deck.cards[0]);
-			deck.cards.remove(deck.cards[0]);
-			drawCardsWhenDeliver(tempPlayers);
+			players[currentPlayer].cards.push(deck.cards[0]);
+			drawCard(deck.cards[0], currentPlayer);
+			deck.cards.remove(deck.cards[0]);			
 		}
 
 		currentPlayer++;
@@ -347,67 +392,121 @@ function GameView(paper) {
 
 		while(cards.length > 0)
 		{
-			var card0 = cards[0];
+			var minCard = cards[0];
 			for(var i = 1; i < cards.length; ++i)
 			{
 				var thisCard = cards[i];
-				if(card0.rank.value > thisCard.rank.value)
-					card0 = thisCard;
+				if(minCard.rank.value > thisCard.rank.value)
+					minCard = thisCard;
 			}
-			cards.remove(card0);
-			sortedCards.push(card0);
+			cards.remove(minCard);
+			sortedCards.push(minCard);
 		}
 		
 		for(var j = 0; j < sortedCards.length; ++j)
 			cards.push(sortedCards[j]);
+		
+		// it doesn't work
+		//player.cards.orderByRank();
+		updateCardsPosition(player.cards);
 	}
 	
-	function drawCardsWhenDeliver(players)
-	{	
-		var card = null;
-		var x, y;
-		var suit, rank;
-		var id;
-		for(var i = 0; i < players.length; ++i) {
-			var player = players[i];
-			var cards = player.cards;
-			
-			// TODO: Consider drawing the player based on their own view.
-			//       One player cannot see other's cards. Temporarily draw
-			//       them under the first player's view point.
-			if(i == 0) {
-				// draw the cards of lord
-
-				// PaperJs will draw raster at the image center,
-				// so add a distance of 'cardW/2'. The offset 0.5
-				// is to fix the pixel issue of canvas drawing. see
-				// http://code.anjanesh.net/2009/05/1-pixel-wide-line-parallel-to-axis-in.html
-				x = self.myPositionInfo.center.x; 
-				y = self.myPositionInfo.center.y;
-				for(var j = 0; j < cards.length; ++j) {
-					suit = cards[j].suit.value;
-					rank = cards[j].rank.value;
-					id = getCardImgId(suit, rank);
-					//console.log(id);
-					card = new paper.Raster(document.getElementById(id));
-					card.name = suit + '-' + rank;
-					card.position = new Point(x+j*self.offset, y);
-				}
-			} else {
-				var totalH = (cards.length-1)*self.offset + self.cardH;
-				var offset = self.offset+self.cardW*2.5;
-				x = i == 2 ? offset : (self.viewSize.width-offset);
-				y = (self.viewSize.height - totalH)/2;
-				// draw other players.
-				for(var j = 0; j < cards.length; ++j) {
-					card = new paper.Raster(document.getElementById('rear'));
-					card.name = 'rear'+j;
-					card.position = new Point(x, y+j*self.offset);
-				}
+	function takeCardsOut(player)
+	{
+		var selectedCards = getSelectedCards(player);
+		if(selectedCards.length > 0)
+		{
+			while(lastOutCards.length > 0)
+			{
+				// clear last out cards
+				var outCard = lastOutCards[0];
+				lastOutCards.remove(outCard);
+				outCard.remove();
 			}
+			
+			// calculate the position of the out cards, it must be in the center of the view
+			var center = view.center;
+			var totalLength = self.cardW + self.offset * selectedCards.length;
+			var startW = center.x - totalLength / 2 + self.cardW / 2;
+			var startH = center.y;
+			
+			for(var i = 0; i < selectedCards.length; ++i)
+			{
+				var card = selectedCards[i];
+				id = getCardImgId(card.suit.value, card.rank.value);
+				var outCard = new paper.Raster(document.getElementById(id));
+				outCard.position = new Point(startW + i*self.offset, startH);
+				lastOutCards.push(outCard);	
+				
+				// remove the card from the player
+				player.cards.remove(card);
+			}
+			
+			updateCardsPosition(player.cards);
+			
+			view.draw();
 		}
 	}
-
+	
+	function updateCardsPosition(cards)
+	{
+		// just redraw the cards for this player
+		while(cardObjects.length > 0)
+		{
+			var card = cardObjects[0];
+			cardObjects.remove(card);
+			card.remove();
+		}
+		
+		var x = self.myPositionInfo.center.x; 
+		var y = self.myPositionInfo.center.y;
+		for(var j = 0; j < cards.length; ++j)
+		{
+			suit = cards[j].suit.value;
+			rank = cards[j].rank.value;
+			id = getCardImgId(suit, rank);
+			//console.log(id);
+			var cardRaster = new paper.Raster(document.getElementById(id));
+			cardRaster.name = suit + '-' + rank;
+			cardRaster.position = new Point(x+j*self.offset, y);
+			cardObjects.push(cardRaster);
+		}
+	}
+	
+	function drawCard(card, currentPlayer)
+	{
+		var cards = players[currentPlayer].cards;
+		var x, y;
+		
+		if(currentPlayer == 0)
+		{
+			x = self.myPositionInfo.center.x; 
+			y = self.myPositionInfo.center.y;
+			// always draw the last delived card
+			var j = cards.length - 1;
+			var suit = card.suit.value;
+			var rank = card.rank.value;
+			var id = getCardImgId(suit, rank);
+			//console.log(id);
+			var cardRaster = new paper.Raster(document.getElementById(id));
+			cardRaster.name = suit + '-' + rank;
+			cardRaster.position = new Point(x+j*self.offset, y);
+			
+			cardObjects.push(cardRaster);
+		}
+		else
+		{
+			var totalH = (cards.length-1)*self.offset + self.cardH;
+			var offset = self.offset+self.cardW*2.5;
+			x = (currentPlayer == 2) ? offset : (self.viewSize.width-offset);
+			y = (self.viewSize.height - totalH)/2;				
+			var j = cards.length - 1;
+			var cardRaster = new paper.Raster(document.getElementById('rear'));
+			cardRaster.name = 'rear'+j;
+			cardRaster.position = new Point(x, y+j*self.offset);
+		}
+	}
+	
 	function drawButtons() {
 		var buttons = ['chupai', 'buchu', 'tishi'];
 		var btnImg = document.getElementById(buttons[0]);
@@ -421,6 +520,7 @@ function GameView(paper) {
 			var x1 = x + i * btnImg.width + i * self.offset;
 			btn = new paper.Raster(document.getElementById(buttons[i]));
 			btn.position = new Point(x1, y);
+			btn.name = buttons[i];
 		}
 		view.draw();
 	}
