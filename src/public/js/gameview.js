@@ -106,9 +106,11 @@ function GameView(paper) {
 		var id = suit + '-' + rank;
 		if(rank == 14) // Ace
 			id = suit + '-1';
-		else if(rank == 15) // black joker
+		else if(rank == 15)
+			id = suit + '-2';
+		else if(rank == 16) // black joker
 			id = 's1';
-		else if(rank == 16)	// red joker
+		else if(rank == 17)	// red joker
 			id = 's2';
 		return id;
 	}
