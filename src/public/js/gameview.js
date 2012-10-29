@@ -383,31 +383,8 @@ function GameView(paper) {
 	
 	function sort(player)
 	{
-		// how to use the native sort function of array? 
-		// please correct it if you know
-		var sortedCards = [];
-		var cards = player.cards;
-		if(cards.length <= 1)
-			return;
-
-		while(cards.length > 0)
-		{
-			var minCard = cards[0];
-			for(var i = 1; i < cards.length; ++i)
-			{
-				var thisCard = cards[i];
-				if(minCard.rank.value > thisCard.rank.value)
-					minCard = thisCard;
-			}
-			cards.remove(minCard);
-			sortedCards.push(minCard);
-		}
-		
-		for(var j = 0; j < sortedCards.length; ++j)
-			cards.push(sortedCards[j]);
-		
 		// it doesn't work
-		//player.cards.orderByRank();
+		player.cards.sort(Card.orderByRank);
 		updateCardsPosition(player.cards);
 	}
 	
