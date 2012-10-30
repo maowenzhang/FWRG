@@ -3,6 +3,7 @@
 	<title>Game Table</title>
 	<script src="3rd/paperjs/paper.js" type="text/javascript"></script>
 	<script src="3rd/jquery/js/jquery-1.8.0.min.js" type="text/javascript"></script>
+	<script src="js/communication.js" type="text/javascript"></script>
 	<script src="js/util.js" type="text/javascript"></script>
 	<script src="js/card.js" type="text/javascript"></script>
 	<script src="js/user.js" type="text/javascript"></script>
@@ -93,25 +94,27 @@
 		}
 		var loginUsers = $.evalJSON(localStorage.getItem('loginUsers'));
 		var jsonUser = sessionStorage.getItem('loginUser');
+		var curSessionUser = jsonUser ? $.evalJSON(jsonUser) : null;
 		if(!jsonUser) {
 			var sampleUsers = ['Lori', 'Andre', 'Bruce'];
 			if(loginUsers.length < sampleUsers.length) {
-				var user = new User(sampleUsers[loginUsers.length]);
-				sessionStorage.setItem('loginUser', $.toJSON(user));
-				loginUsers[loginUsers.length] = user;
+				curSessionUser = new User(sampleUsers[loginUsers.length]);
+				sessionStorage.setItem('loginUser', $.toJSON(curSessionUser));
+				loginUsers[loginUsers.length] = curSessionUser;
 				localStorage.setItem('loginUsers', $.toJSON(loginUsers));
+			} else {
+				curSessionUser = loginUsers[0];
 			}
 		} else {
-			var curUser = $.evalJSON(jsonUser);
 			var existUser = null;
 			for(var i = 0; i < loginUsers.length; ++i) {
-				if(loginUsers[i].name == curUser.name) {
+				if(loginUsers[i].name == curSessionUser.name) {
 					existUser = loginUsers[i];
 					break;
 				}
 			}
 			if(!existUser) {
-				loginUsers[loginUsers.length] = curUser;
+				loginUsers[loginUsers.length] = curSessionUser;
 				localStorage.setItem('loginUsers', $.toJSON(loginUsers));
 			}
 		}
@@ -129,31 +132,37 @@
 				localStorage.setItem('loginUsers', $.toJSON(loginUsers));
 			}
 		});
-	</script>
-	<script type="text/paperscript" canvas="paper">
 
-		var gameview = new GameView(paper);
-		var players = gameview.init();
-        function onMouseDown(event) {
-			console.log(event.point);
-			//Test if any of the objects have been hit, and store the object
-			var options = {segments:true, stroke:true, fill: true, tolerance: 5};
-			var hitObject = gameview.hitTest(event.point, options);
-			gameview.handleMouseDownEvent(hitObject);
-        }
-        function onMouseUp(event) {
-            if(gameview.hitObject) {
-				if(gameview.hitObject instanceof Raster) {
-				} else {
-					//hitObject.fillColor = 'gray';
-					gameview.hitObject.strokeColor = 'yellow';
-					gameview.hitObject.strokeWidth = 1;
+		
+		// Use javascript directly, here install paperJS.
+		paper.install(window);
+		
+		// Only executed our code once the DOM is ready.
+		$(document).ready(function(){
+			console.log('before install paper');
+			paper.setup('paper');
+			console.log('after install paper');
+			var gameview = new GameView(paper, loginUsers, curSessionUser);
+			var players = gameview.init();
+			// Create a simple drawing tool:
+			var tool = new Tool();
+			tool.onMouseDown = function(event) {
+				//Test if any of the objects have been hit, and store the object
+				var options = {segments:true, stroke:true, fill: true, tolerance: 5};
+				var hitObject = gameview.hitTest(event.point, options);
+				gameview.handleMouseDownEvent(hitObject);
+			}
+			tool.onMouseUp = function(event) {
+				if(gameview.hitObject) {
+					if(gameview.hitObject instanceof Raster) {
+					} else {
+						//hitObject.fillColor = 'gray';
+						gameview.hitObject.strokeColor = 'yellow';
+						gameview.hitObject.strokeWidth = 1;
+					}
 				}
-            }
-        }
-		//function onFrame(event){
-			//gameview.deliverCards();
-		//}
+			}
+		});
 	</script>
 	<style type="text/css">
 				body { 
