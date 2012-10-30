@@ -3,24 +3,24 @@ function PlayerInSeat(player, seat) {
 	this.seat = seat;
 }
 
-function GameTable(tableId, parent) {
+function GameTable(tableId, numSeats) {
 
-	this._init = function(tableId, parent) {
+	this._init = function(tableId, numSeats) {
 		this.tableId = tableId;
 		this.playersInSeats = [];
 		this.observers = [];
-		this.parent = parent; // Now the parent of table is the game hall.
+		this.numSeats = numSeats;
 	}
-	this._init(tableId, parent);
+	this._init(tableId, numSeats);
 
 	// Return true if the table is available to join
 	this.avaiable = function() {
-		return this.playersInSeats.length < this.parent.numSeats;
+		return this.playersInSeats.length < this.numSeats;
 	}
 	
 	// Join the game in this table with specified seat..
 	this.join = function(player, seat) {
-		if(this.playersInSeats.length < this.parent.numSeats && seat < this.parent.numSeats) {
+		if(this.playersInSeats.length < this.numSeats && seat < this.numSeats) {
 			this.playersInSeats[playersInSeats.length] = new PlayerInSeat(player, seat);
 		} else {
 			this.observers[this.observers.length] = player;
@@ -30,7 +30,7 @@ function GameTable(tableId, parent) {
 
 	// Automatically join the game if there's one available seat.
 	this.autoJoin = function(player) {
-		if(this.playersInSeats.length >= this.parent.numSeats) {
+		if(this.playersInSeats.length >= this.numSeats) {
 			// In auto-join mode, we don't allow player can log in as a observer.
 			return false;
 		} else {
@@ -72,7 +72,7 @@ function GameHall(numTables, numSeats) {
 		this.numSeats = numSeats;
 		this.tables = [];
 		for(var i = 0; i < numTables; ++i) {
-			this.tables[i] = new GameTable(i, this);
+			this.tables[i] = new GameTable(i, numSeats);
 		}
 	}
 	this._init(numTables, numSeats);

@@ -1,30 +1,81 @@
-var Db = require('mongodb').Db;
-var Server = require('mongodb').Server;
-var client = new Db('test', new Server('127.0.0.1', 27017, {}), {safe:false}),
-	test= function (err, collection) {
-      collection.insert({a:2}, function(err, docs) {
+// Require modules
+var mongodb = require("mongodb"),
+    mongoserver = new mongodb.Server('127.0.0.1', 27017, {}),
+    db = new mongodb.Db("test", mongoserver, {safe:false});
 
-        collection.count(function(err, count) {
-          //test.assertEquals(1, count);
-		  console.log("lori***: count: " + count);
-        });
+// Class use to manage data
+function DataMgr() {
+	this.gameState = null;	
+	this.isOpened = false;
+	// Basic operations
+	//
+	this.insertData = function(col1, obj) {
+		console.log("insert data");
+		col1.insert(obj, function(err, col) {
+			console.log("insert object: " + JSON.stringify(obj));
+			//console.log(col);
+		});
+	};
+	this.removeData = function(col1, obj) {
+		console.log("remove data");
+		col1.remove(obj, function(err, col) {
+			console.log("remove object: " + JSON.stringify(obj));
+		});
+	};
+	this.printData = function(col1, obj) {
+		console.log("print data");
+		col1.find().toArray(function(err, results) {
+			console.log("all items in collection: " + JSON.stringify(results));
+		});
+	};
+	
+	this.op_gamestate = function(obj, op_func) {
+		if (!this.isOpened) {
+			this.open();
+		}		
 
-        // Locate all the entries using find
-        collection.find().toArray(function(err, results) {
-          //test.assertEquals(1, results.length);
-          //test.assertTrue(results[0].a === 2);
-		  console.log("lori***: a: " + results[0].a);
-		  
-		  for(var i=0; i<results.length; i++) {
-			console.log(results[0].a);			
-		  }
-		  
-          // Let's close the db
-          client.close();
-        });
-      });
-    };
+		db.collection('gamestate', function(err, col) {
+			if (!err) {
+				console.log("got gamestate colection");
+			}
+			else {
+				console.log("fail to get gamestate colection!");
+			}
+			this.gamestate = col;
+			//console.log(col);
+			op_func(col, obj);
+		});
+	};
+	
+	// Basic operations
+	//
+	this.insert = function(obj) {		
+		this.gameState.insert(obj, {safe:true}, function(err, col) {
+			console.log("insert object: " + JSON.stringify(obj));
+		});
+	};
+	this.remove = function(obj) {
+		return this.op_gamestate(obj, this.removeData);
+	};	
+	this.print = function(obj) {
+		return this.op_gamestate(obj, this.printData);
+	};
+	
+	this.open = function() {
+		db.open();
+		console.log("db opened!");
+		this.isOpened = true;
+		
+		this.gameState = db.collection('gamestate');
+		if (this.gameState) {
+			console.log("got game state");
+		}
+	}
+	this.close = function() {
+		db.close(function(err, p_client) {
+			console.log("db closed!");
+		});
+	}
+}
 
-client.open(function(err, p_client) {
-  client.collection('test_insert', test);
-});
+module.exports = new DataMgr();

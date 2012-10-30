@@ -20,6 +20,8 @@ function Player(name) {
 	this.cards = [];
 	this.isActive = false;
 	this.isLord = false;
+	// Player's cards on table
+	this.outcards = [];
 }
 
 // Player derives from User

@@ -1,4 +1,4 @@
-function GameView(paper) {
+function GameView(paper, loginUsers, curSessionUser) {
 
 	// reference the object in paper.js.
 	var Point = paper.Point;
@@ -10,7 +10,6 @@ function GameView(paper) {
 	this.center = view.center;
 	this.margin = 10; //10px
 	this.offset = 16;
-	var self = this;
 
 	// track the active player, which needs to deliver cards or
 	// pass.
@@ -19,6 +18,12 @@ function GameView(paper) {
 	this.hitObject = null;
 	var cardObjects = []; // record raster object of current player
 
+	this.loginUsers = loginUsers;
+	this.sessionUser = curSessionUser;
+	this.players = []; // will be created based on the loginUsers..
+	
+	var self = this;
+	
 	function createImageElem(id, src, style)
 	{
 		var img = document.createElement("img");
@@ -124,21 +129,22 @@ function GameView(paper) {
 	}
 
 	// Now this function just draw the players info without the cards.
-	function drawPlayers(players)
+	function drawPlayers(players, sessionUser)
 	{	
 		var card = null;
 		var x, y;
 		var suit, rank;
 		var id;
 		var avatarImg, avatarPos, refVec, playerName;
+		var numOtherPlayers = 0;
 		for(var i = 0; i < players.length; ++i) {
 			var player = players[i];
-			var cards = player.cards;
+			//var cards = player.cards;
 			// draw the avatar
 			avatarImg = document.getElementById(player.avatar);
 			avatar = new paper.Raster(avatarImg);
 			
-			if(i == 0) {
+			if(player.name == sessionUser.name) {
 				// calc the avatar pos for this player
 				x = avatarImg.width*2.5;
 				y = self.viewSize.height - avatarImg.height/2 - self.margin;
@@ -147,7 +153,7 @@ function GameView(paper) {
 			} else {
 				var offset = self.offset+self.cardW*2.5;
 				// calc the avatar pos for this player
-				if(i == 2) {
+				if(numOtherPlayers == 0) {
 					x = offset/2;
 					y = self.viewSize.height/2;
 					avatarPos = new Point(x, y);
@@ -158,6 +164,7 @@ function GameView(paper) {
 					avatarPos = new Point(x, y);
 					refVec = new Point(1, -1);
 				}
+				numOtherPlayers++;
 			}
 			
 			// set the position of the avatar
@@ -178,6 +185,7 @@ function GameView(paper) {
 				drawLordFlag(avatarPos, refVec);
 			}
 		}
+		view.draw();
 	}
 
 	var currentPlayer = 0;
@@ -193,6 +201,7 @@ function GameView(paper) {
 		};
 	}
 
+	var waitPlayerTimerId;
 	this.init = function()
 	{
 		// 0. load resources.
@@ -216,21 +225,45 @@ function GameView(paper) {
 		var bkg = new paper.Raster(document.getElementById("background"));
 		bkg.position = view.center;
 		//bkg.scale(1.3);
+		view.draw();
 		
 		//// 2. init seat (comment for game hall)
 		//initSeat();
 		
-		// 3. draw the cards of each players.
-		players = getPlayersInfo();
-		//console.log(players);
-		drawPlayers(players);
+		waitPlayerTimerId = setInterval(_waitForPlayers(), 10);
 		
+		return this.players;
+	}
+
+	function _waitForPlayers() {
+		//// draw the cards of each players.
+		//players = getPlayersInfo();
+		
+		for(var i = 0; i < self.loginUsers.length; ++i) {
+			var found = false;
+			for(var j = 0; j < self.players.length; ++j) {
+				if(self.loginUsers[i].name == self.players[j].name) {
+					found = true;
+					break;
+				}
+			}
+			if(!found) {
+				self.players[i] = new Player(self.loginUsers[i].name);
+				self.players[i].avatar = 'avatar';
+			}
+		}
+		drawPlayers(self.players, self.sessionUser);
+		if(self.players.length < 3)
+			return;
+
+		clearInterval(waitPlayerTimerId);
+		
+		// start to deliver cards to each player
 		deck = new Deck();
-		deck.shuffle();		
+		deck.shuffle();
 		
-		timerId = setInterval(this.deliverCards, 10);
-		
-		return players;
+		timerId = setInterval(deliverCards, 10);
+		return self.players;
 	}
 
 	function initSeat()
@@ -293,12 +326,12 @@ function GameView(paper) {
 				
 					if(hitObject.name == "chupai")
 					{
-						takeCardsOut(players[0]);		
+						takeCardsOut(this.players[0]);		
 					}
 					else
 					{
 						// active player
-						var card = findCard(players[0].cards, hitObject.name);
+						var card = findCard(this.players[0].cards, hitObject.name);
 						if(card) {
 							if(card.selected) {
 								hitObject.position.y = hitObject.position.y + this.offset;
@@ -319,14 +352,12 @@ function GameView(paper) {
 		}
 	}
 	
-	this.deliverCards = function ()
+	function deliverCards()
 	{
-		// new a deck for delivering cards
-		
 		if(deck.cards.length == 0) {			
 	
 			clearInterval(timerId);			
-			sort(players[0]);
+			sort(self.players[0]);
 			drawButtons();
 			return;
 		}
@@ -339,8 +370,8 @@ function GameView(paper) {
 			for(i = 0; i < remainCards; ++i)
 			{
 				// Assume the first player is the lord.				
-				if(players[0].isLord) {
-					players[0].cards.push(deck.cards[i]);
+				if(self.players[0].isLord) {
+					self.players[0].cards.push(deck.cards[i]);
 					drawCard(deck.cards[i], 0);
 				}
 			}			
@@ -371,7 +402,7 @@ function GameView(paper) {
 		}
 		else
 		{
-			players[currentPlayer].cards.push(deck.cards[0]);
+			self.players[currentPlayer].cards.push(deck.cards[0]);
 			drawCard(deck.cards[0], currentPlayer);
 			deck.cards.remove(deck.cards[0]);			
 		}
@@ -458,7 +489,7 @@ function GameView(paper) {
 	
 	function drawCard(card, currentPlayer)
 	{
-		var cards = players[currentPlayer].cards;
+		var cards = self.players[currentPlayer].cards;
 		var x, y;
 		
 		if(currentPlayer == 0)
