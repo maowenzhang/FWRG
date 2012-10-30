@@ -85,60 +85,71 @@
 		})(jQuery);
 
 		// create the game hall (with just one table)
-		if (!localStorage.getItem('gameHall')) {
-			localStorage.setItem('gameHall', $.toJSON(new GameHall(1, 3)));
-		}
-		// This will mimic storage of the login users on server. I think it will store on the server side eventually.
-		if(!localStorage.getItem('loginUsers')) {
-			localStorage.setItem('loginUsers', $.toJSON(new Array()));
-		}
-		var loginUsers = $.evalJSON(localStorage.getItem('loginUsers'));
-		var jsonUser = sessionStorage.getItem('loginUser');
-		var curSessionUser = jsonUser ? $.evalJSON(jsonUser) : null;
-		if(!jsonUser) {
-			var sampleUsers = ['Lori', 'Andre', 'Bruce'];
-			if(loginUsers.length < sampleUsers.length) {
-				curSessionUser = new User(sampleUsers[loginUsers.length]);
-				sessionStorage.setItem('loginUser', $.toJSON(curSessionUser));
-				loginUsers[loginUsers.length] = curSessionUser;
-				localStorage.setItem('loginUsers', $.toJSON(loginUsers));
-			} else {
-				curSessionUser = loginUsers[0];
-			}
-		} else {
-			var existUser = null;
-			for(var i = 0; i < loginUsers.length; ++i) {
-				if(loginUsers[i].name == curSessionUser.name) {
-					existUser = loginUsers[i];
-					break;
-				}
-			}
-			if(!existUser) {
-				loginUsers[loginUsers.length] = curSessionUser;
-				localStorage.setItem('loginUsers', $.toJSON(loginUsers));
-			}
-		}
+		//if (!localStorage.getItem('gameHall')) {
+		//if (!localStorage.getItem('gameHall')) {
+		//	localStorage.setItem('gameHall', $.toJSON(new GameHall(1, 3)));
+		//}
+		//// This will mimic storage of the login users on server. I think it will store on the server side eventually.
+		//if(!localStorage.getItem('loginUsers')) {
+		//	localStorage.setItem('loginUsers', $.toJSON(new Array()));
+		//}
+		//var loginUsers = $.evalJSON(localStorage.getItem('loginUsers'));
+		//var jsonUser = sessionStorage.getItem('loginUser');
+		//var curSessionUser = jsonUser ? $.evalJSON(jsonUser) : null;
+		//if(!jsonUser) {
+		//	var sampleUsers = ['Lori', 'Andre', 'Bruce'];
+		//	if(loginUsers.length < sampleUsers.length) {
+		//		curSessionUser = new User(sampleUsers[loginUsers.length]);
+		//		sessionStorage.setItem('loginUser', $.toJSON(curSessionUser));
+		//		loginUsers[loginUsers.length] = curSessionUser;
+		//		localStorage.setItem('loginUsers', $.toJSON(loginUsers));
+		//	} else {
+		//		curSessionUser = loginUsers[0];
+		//	}
+		//} else {
+		//	var existUser = null;
+		//	for(var i = 0; i < loginUsers.length; ++i) {
+		//		if(loginUsers[i].name == curSessionUser.name) {
+		//			existUser = loginUsers[i];
+		//			break;
+		//		}
+		//	}
+		//	if(!existUser) {
+		//		loginUsers[loginUsers.length] = curSessionUser;
+		//		localStorage.setItem('loginUsers', $.toJSON(loginUsers));
+		//	}
+		//}
 		
-		$(window).bind('beforeunload', function() {
-			var loginUsers = $.evalJSON(localStorage.getItem('loginUsers'));
-			var logoutUser = $.evalJSON(sessionStorage.getItem('loginUser'));
-			if(loginUsers && loginUsers.length > 0) {
-				for(var i = 0; i < loginUsers.length; ++i) {
-					if(loginUsers[i].name == logoutUser.name) {
-						loginUsers.remove(loginUsers[i]);
-						break;
-					}
-				}
-				localStorage.setItem('loginUsers', $.toJSON(loginUsers));
+		//$(window).bind('beforeunload', function() {
+		//	var loginUsers = $.evalJSON(localStorage.getItem('loginUsers'));
+		//	var logoutUser = $.evalJSON(sessionStorage.getItem('loginUser'));
+		//	if(loginUsers && loginUsers.length > 0) {
+		//		for(var i = 0; i < loginUsers.length; ++i) {
+		//			if(loginUsers[i].name == logoutUser.name) {
+		//				loginUsers.remove(loginUsers[i]);
+		//				break;
+		//			}
+		//		}
+		//		localStorage.setItem('loginUsers', $.toJSON(loginUsers));
+		//	}
+		//});
+		function login() {
+			var userName = '';
+			while(userName === '')
+			{
+				userName=prompt('Please enter your name','');
 			}
-		});
+			sendUserLogin(userName);
+		}
 
-		
 		// Use javascript directly, here install paperJS.
 		paper.install(window);
 		
 		// Only executed our code once the DOM is ready.
 		$(document).ready(function(){
+		
+			login();
+			
 			console.log('before install paper');
 			paper.setup('paper');
 			console.log('after install paper');
