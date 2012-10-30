@@ -20,7 +20,7 @@ socket.on('update', function(type, data) {
 	// data: gameState object
 	//
 	
-}
+});
 
 // Util method for client to call/sending message to server
 //

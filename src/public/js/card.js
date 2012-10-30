@@ -87,8 +87,9 @@ function SuitPattern(cards) {
     else if (this.IsTrebleSequence()) this.pattern = 8;
 //    else if(this.IsTrebleWithSingleSequence()) this.pattern = 9;
 //    else if(this.IsTrebleWithDoubleSequence()) this.pattern = 10;
-    else if (this.IsBomb()) this.pattern = 11;
-    else if (this.IsRockets()) this.pattern = 12;
+    else if (this.IsFourWithTwo()) this.pattern = 11;
+    else if (this.IsBomb()) this.pattern = 12;
+    else if (this.IsRockets()) this.pattern = 13;
     else this.pattern = 0;
 
     if(this.pattern != 0)
@@ -97,7 +98,11 @@ function SuitPattern(cards) {
 
 SuitPattern.Pattern = enumeration({ Invalid: 0, Single: 1, Double: 2, Treble: 3, TrebleWithSingle: 4, TrebleWithDouble: 5,
                                     SingleSequence: 6, DoubelSequence: 7, TrebleSequence: 8, TrebleWithSingleSequence:9, 
-                                    TrebleWithDoubleSequence:10, Bomb:11, Rockets:12});
+                                    TrebleWithDoubleSequence:10, FourWithTwo:11, Bomb:12, Rockets:13});
+
+SuitPattern.prototype.IsValid = function () {
+    return this.pattern != 0;
+}
 
 SuitPattern.prototype.IsSingle = function () {
     return this.cards.length == 1;
@@ -117,7 +122,7 @@ SuitPattern.prototype.IsTreble = function () {
     if (this.cards.length !=3)
         return false;
 
-    if (this.cards[0].rank == this.cards[1].rank == this.cards[2].rank)
+    if (this.cards[0].rank == this.cards[1].rank && this.cards[1].rank == this.cards[2].rank)
         return true;
 
     return false;
@@ -127,10 +132,10 @@ SuitPattern.prototype.IsTrebleWithSingle = function () {
     if (this.cards.length != 4)
         return false;
 
-    if (this.cards[0].rank == this.cards[1].rank == this.cards[2].rank)
+    if (this.cards[0].rank == this.cards[1].rank && this.cards[1].rank == this.cards[2].rank)
         return true;
 
-    if (this.cards[1].rank == this.cards[2].rank == this.cards[3].rank) {
+    if (this.cards[1].rank == this.cards[2].rank && this.cards[2].rank == this.cards[3].rank) {
         var temp = this.cards[0]; this.cards[0] = this.cards[3]; this.cards[3] = temp; // Swap
         return true;
     }
@@ -142,10 +147,10 @@ SuitPattern.prototype.IsTrebleWithDouble = function () {
     if (this.cards.length != 5)
         return false;
 
-    if (this.cards[0].rank == this.cards[1].rank == this.cards[2].rank && this.cards[3].rank == this.cards[4].rank)
+    if (this.cards[0].rank == this.cards[1].rank && this.cards[1].rank == this.cards[2].rank && this.cards[3].rank == this.cards[4].rank)
         return true;
 
-    if (this.cards[1].rank == this.cards[2].rank && this.cards[3].rank == this.cards[4].rank == this.cards[5].rank) {
+    if (this.cards[1].rank == this.cards[2].rank && this.cards[3].rank == this.cards[4].rank && this.cards[4].rank == this.cards[5].rank) {
         var temp = this.cards[0]; this.cards[0] = this.cards[4]; this.cards[4] = temp; // Swap
         var temp2 = this.cards[1]; this.cards[1] = this.cards[3]; this.cards[3] = temp2; // Swap
         return true;
@@ -165,7 +170,7 @@ SuitPattern.prototype.IsSingleSequence = function () {
         return false;
     }
 
-    for(var i=1; i<cards.length; i++)
+    for(var i=1; i<this.cards.length; i++)
     {
         if (this.cards[i].rank - this.cards[i - 1].rank != 1)
             return false;
@@ -191,7 +196,7 @@ SuitPattern.prototype.IsDoubleSequence = function () {
             return false;
     }
 
-    for(var i=0; i<cards.length-2; i+=2)
+    for(var i=0; i<this.cards.length-2; i+=2)
     {
         if (this.cards[i + 2].rank - this.cards[i].rank != 1)
             return false;
@@ -223,14 +228,38 @@ SuitPattern.prototype.IsTrebleSequence = function () {
     return true;
 }
 
+SuitPattern.prototype.IsFourWithTwo = function () {
+    if (this.cards.length != 6)
+        return false;
+
+    if (this.cards[0].rank == this.cards[1].rank && this.cards[1].rank == this.cards[2].rank && this.cards[2].rank == this.cards[3].rank)
+        return true;
+
+    if (this.cards[1].rank == this.cards[2].rank && this.cards[2].rank == this.cards[3].rank && this.cards[3].rank == this.cards[4].rank){
+        var temp = this.cards[0]; this.cards[0] = this.cards[4]; this.cards[4] = temp; // Swap
+        return true;
+    }
+
+    if (this.cards[2].rank == this.cards[3].rank && this.cards[3].rank == this.cards[4].rank && this.cards[4].rank == this.cards[5].rank){
+        var temp = this.cards[0]; this.cards[0] = this.cards[5]; this.cards[5] = temp; // Swap
+        var temp = this.cards[1]; this.cards[1] = this.cards[4]; this.cards[4] = temp; // Swap
+        return true;
+    }
+
+    return false;
+}
+
 SuitPattern.prototype.IsBomb = function () {
     if (this.cards.length != 4)
         return false;
+        
+    for(var i=0;i<this.cards.length-1;i++)
+    {
+        if(this.cards[i] != this.cards[i+1])
+            return false;
+    }
 
-    if (cards[0].rank == cards[1].rank == cards[2].rank == cards[3].rank)
-        return true;
-
-    return false;
+     return true;
 }
 
 SuitPattern.prototype.IsRockets = function () {

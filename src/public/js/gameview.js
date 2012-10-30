@@ -424,6 +424,10 @@ function GameView(paper, loginUsers, curSessionUser) {
 	function takeCardsOut(player)
 	{
 		var selectedCards = getSelectedCards(player);
+        var suitpattern = (new SuitPattern(selectedCards));
+        if (!suitpattern.IsValid())
+            return;
+
 		if(selectedCards.length > 0)
 		{
 			while(lastOutCards.length > 0)
