@@ -1,5 +1,6 @@
 //var io = require('socket.io');
-var socket = io.connect('http://localhost:8888');
+var socket = io.connect('http://localhost:8080');
+console.log("socket connected at localhost:8080");
 
 function sendUpdateToServer(type, data) {
     socket.emit("update", type, data);
