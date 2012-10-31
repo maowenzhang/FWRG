@@ -1,4 +1,4 @@
-function GameView(paper, loginUsers, curSessionUser) {
+function GameView(paper) {
 
 	// reference the object in paper.js.
 	var Point = paper.Point;
@@ -18,9 +18,8 @@ function GameView(paper, loginUsers, curSessionUser) {
 	this.hitObject = null;
 	var cardObjects = []; // record raster object of current player
 
-	this.loginUsers = loginUsers;
-	this.sessionUser = curSessionUser;
-	this.players = []; // will be created based on the loginUsers..
+	this.sessionPlayer = null;//gameSession.sessionPlayer();
+	this.players = null;//gameSession.joinedPlayers;
 	
 	var self = this;
 	
@@ -128,8 +127,12 @@ function GameView(paper, loginUsers, curSessionUser) {
 		return lord;
 	}
 
+	this.update = function() {
+		drawPlayers(this.joinedPlayers, this.sessionPlayer);
+	}
+	
 	// Now this function just draw the players info without the cards.
-	function drawPlayers(players, sessionUser)
+	function drawPlayers(players, sessionPlayer)
 	{	
 		var card = null;
 		var x, y;
@@ -144,7 +147,7 @@ function GameView(paper, loginUsers, curSessionUser) {
 			avatarImg = document.getElementById(player.avatar);
 			avatar = new paper.Raster(avatarImg);
 			
-			if(player.name == sessionUser.name) {
+			if(player.name == sessionPlayer.name) {
 				// calc the avatar pos for this player
 				x = avatarImg.width*2.5;
 				y = self.viewSize.height - avatarImg.height/2 - self.margin;
@@ -237,7 +240,7 @@ function GameView(paper, loginUsers, curSessionUser) {
 		//// 2. init seat (comment for game hall)
 		//initSeat();
 		
-		waitPlayerTimerId = setInterval(_waitForPlayers(), 10);
+		//waitPlayerTimerId = setInterval(_waitForPlayers(), 10);
 		
 		return this.players;
 	}
@@ -259,7 +262,7 @@ function GameView(paper, loginUsers, curSessionUser) {
 				self.players[i].avatar = 'avatar';
 			}
 		}
-		drawPlayers(self.players, self.sessionUser);
+		drawPlayers(self.players, self.sessionPlayer);
 		if(self.players.length < 3)
 			return;
 

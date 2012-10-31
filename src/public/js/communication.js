@@ -1,5 +1,32 @@
 var socket = io.connect('http://localhost:8080');
 
+function GameSession() {
+	this.view = null; // game view..
+	this.joinedPlayers = null;
+	this.sessionPlayerName = '';
+	this.sessionPlayer = function() {
+		if(!this.joinedPlayers || !this.sessionPlayerName)
+			return null;
+		for(var i = 0; i < this.joinedPlayers.length; ++i) {
+			var player = this.joinedPlayers[i];
+			if(player && player.name == this.sessionPlayerName)
+				return player;
+		}
+		return null;
+	}
+	this.endSession = function() {
+		this.view = null; 
+		this.joinedPlayers = null;
+		this.sessionPlayerName = '';
+	}
+	this.updateView = function() {
+		this.view.sessionPlayer = this.sessionPlayer();
+		this.view.joinedPlayers = this.joinedPlayers;
+		this.view.update();
+	}
+}
+var gameSession = new GameSession();
+
 // Connected to server
 socket.on('connect', function () {
     console.log("socket connected at localhost:8080");
@@ -24,15 +51,11 @@ socket.on('updateFromServer', function(data) {
 	
 	// New user login
 	if (data.type == "login") {
-		//
-		
-		
+		gameSession.joinedPlayers = data.gameState.players;
+		gameSession.updateView();
 	}
 	else if (data.type == "") {
 	
-	}
-	else if (data.type == "") {
-		
 	}
 });
 
@@ -48,6 +71,7 @@ function sendStatusRequestToServer() {
 
 function sendUserLogin(playername) {
     sendUpdateToServer("login", playername);
+	gameSession.sessionPlayerName = playername;
 }
 
 function sendUserReady(playername) {
@@ -60,4 +84,5 @@ function sendUserProduce(pokerName) {
 
 function sendUserEnd(playername) {
     sendUpdateToServer("end", playername);
+	gameSession.endSession();
 }

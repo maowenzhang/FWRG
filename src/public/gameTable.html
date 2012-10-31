@@ -134,8 +134,7 @@
 		//	}
 		});
 		function login() {
-			while(curLoginUser === '')
-			{
+			while(curLoginUser === '') {
 				curLoginUser = prompt('Please enter your name','');
 			}
 			sendUserLogin(curLoginUser);
@@ -147,15 +146,14 @@
 		// Only executed our code once the DOM is ready.
 		$(document).ready(function(){
 		
-			login();
-			
-			console.log('before install paper');
 			paper.setup('paper');
-			console.log('after install paper');
-			var loginUsers = ["lori", "andre", "bruce"];
-			var curSessionUser = "lori";
-			var gameview = new GameView(paper, loginUsers, curSessionUser);
-			var players = gameview.init();
+			
+			var gameview = new GameView(paper);
+			
+			login();
+			gameSession.view = gameview;
+			gameview.init();
+			
 			// Create a simple drawing tool:
 			var tool = new Tool();
 			tool.onMouseDown = function(event) {

@@ -2,7 +2,7 @@
 function User(name) {
 	this.name = name;
 	this.sex = "male";
-	this.avatar = "avatar1";
+	this.avatar = "avatar";
 	this.score = 0;
 }
 
