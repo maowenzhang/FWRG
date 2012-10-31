@@ -51,12 +51,15 @@ socket.on('updateFromServer', function(data) {
 	
 	// New user login
 	if (data.type == "login") {
-		gameSession.joinedPlayers = data.gameState.players;
-		gameSession.updateView();
+		
 	}
 	else if (data.type == "") {
-	
+		
 	}
+	
+	// Update session..
+	gameSession.joinedPlayers = data.gameState.players;
+	gameSession.updateView();
 });
 
 // Util method for client to call/sending message to server

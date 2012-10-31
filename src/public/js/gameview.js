@@ -86,23 +86,6 @@ function GameView(paper) {
 		return bound;
 	}
 
-	// mock up, we'll get the user info from server
-	function getPlayersInfo()
-	{
-		// mimic 3 player and return to the caller
-		var players = [];
-		players[0] = new Player("Lori");
-		players[1] = new Player("Andre");
-		players[2] = new Player("Bruce");
-		
-		players[0].isLord = true;
-		players[0].avatar = 'avatar';
-		players[1].avatar = 'avatar2';
-		players[2].avatar = 'avatar';
-		
-		return players;
-	}
-
 	// mapping the card to card image element id.
 	function getCardImgId(suit, rank)
 	{
@@ -134,6 +117,9 @@ function GameView(paper) {
 	// Now this function just draw the players info without the cards.
 	function drawPlayers(players, sessionPlayer)
 	{	
+		if(!players || !sessionPlayer)
+			return;
+			
 		var card = null;
 		var x, y;
 		var suit, rank;
@@ -239,9 +225,7 @@ function GameView(paper) {
 		
 		//// 2. init seat (comment for game hall)
 		//initSeat();
-		
-		//waitPlayerTimerId = setInterval(_waitForPlayers(), 10);
-		
+
 		return this.players;
 	}
 
