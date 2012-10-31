@@ -68,6 +68,10 @@ io.on('connection', function (socket) {
 			// update player status
 			
 		}
+		else if (type == "end") {
+			console.log("user: " + data + " left!");
+			gs.removePlayer(data);
+		}
 		
 		var eventdata = new EventData(type, gs);
 		updateFromServerToClients(socket, eventdata);

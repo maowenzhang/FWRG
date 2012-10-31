@@ -27,6 +27,22 @@ function GameState(name) {
 		console.log("create new player: " + newplayer);
 		this.players.push(newplayer);
 	}
+	
+	this.removePlayer = function(name) {
+		console.log("try to remove player");
+		var idx = -1; 
+		for(var i = 0; i < this.players.length; ++i) {
+			var player = this.players[i];
+			if(player && player.name == name) {
+				idx = i;
+				break;
+			}
+		}
+		if(idx >= 0) { 
+			this.players.splice(idx, 1); 
+			console.log("player " + name + " is removed");
+		}
+	}
 }
 
 // Define manager class to manager all GameStates
