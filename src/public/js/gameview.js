@@ -1,4 +1,4 @@
-function GameView(paper, loginUsers, curSessionUser) {
+function GameView(paper) {
 
 	// reference the object in paper.js.
 	var Point = paper.Point;
@@ -18,9 +18,9 @@ function GameView(paper, loginUsers, curSessionUser) {
 	this.hitObject = null;
 	var cardObjects = []; // record raster object of current player
 
-	this.loginUsers = loginUsers;
-	this.sessionUser = curSessionUser;
-	this.players = []; // will be created based on the loginUsers..
+	this.sessionPlayer = null;//gameSession.sessionPlayer();
+	this.players = null;//gameSession.joinedPlayers;
+	this.playerViews = [];
 	
 	var self = this;
 	
@@ -87,23 +87,6 @@ function GameView(paper, loginUsers, curSessionUser) {
 		return bound;
 	}
 
-	// mock up, we'll get the user info from server
-	function getPlayersInfo()
-	{
-		// mimic 3 player and return to the caller
-		var players = [];
-		players[0] = new Player("Lori");
-		players[1] = new Player("Andre");
-		players[2] = new Player("Bruce");
-		
-		players[0].isLord = true;
-		players[0].avatar = 'avatar';
-		players[1].avatar = 'avatar2';
-		players[2].avatar = 'avatar';
-		
-		return players;
-	}
-
 	// mapping the card to card image element id.
 	function getCardImgId(suit, rank)
 	{
@@ -128,23 +111,76 @@ function GameView(paper, loginUsers, curSessionUser) {
 		return lord;
 	}
 
+	this.update = function() {
+		cleanPlayers(this.joinedPlayers);
+		drawPlayers(this.joinedPlayers, this.sessionPlayer);
+	}
+	
+	function cleanPlayers(players) {
+		if(!players)
+			return;
+		var existing, i, j;
+		var obsoletes = [];
+		for(j = 0; j < self.playerViews.length; ++j) {
+			existing = false;
+			for(i = 0; i < players.length; ++i) {
+				if(players[i].name == self.playerViews[j].playerName) {
+					existing = true;
+					break;
+				}
+			}
+			if(!existing) {
+				obsoletes[obsoletes.length] = j;
+			}
+		}
+		
+		var playerview, idx;
+		for(i = 0; i < obsoletes.length; ++i) {
+			idx = obsoletes[i];
+			playerview = self.playerViews[idx];
+			playerview.nameObject.remove();
+			playerview.avatarObject.remove();
+			playerview.nameObject = null;
+			playerview.avatarObject = null;
+			self.playerViews.splice(idx, 1);
+		}
+	}
+	
 	// Now this function just draw the players info without the cards.
-	function drawPlayers(players, sessionUser)
+	function drawPlayers(players, sessionPlayer)
 	{	
+		if(!players || !sessionPlayer)
+			return;
+		
 		var card = null;
 		var x, y;
 		var suit, rank;
 		var id;
 		var avatarImg, avatarPos, refVec, playerName;
 		var numOtherPlayers = 0;
+		var existing;
 		for(var i = 0; i < players.length; ++i) {
 			var player = players[i];
+			// check if the player has been drawn.
+			existing = false;
+			for(var j = 0; j < self.playerViews.length; ++j) {
+				if(player && player.name == self.playerViews[j].playerName) {
+					existing = true;
+					break;
+				}
+			}
+			if(existing) {
+				if(player.name != sessionPlayer.name)
+					numOtherPlayers++;
+				continue;
+			}
+		
 			//var cards = player.cards;
 			// draw the avatar
 			avatarImg = document.getElementById(player.avatar);
 			avatar = new paper.Raster(avatarImg);
 			
-			if(player.name == sessionUser.name) {
+			if(player.name == sessionPlayer.name) {
 				// calc the avatar pos for this player
 				x = avatarImg.width*2.5;
 				y = self.viewSize.height - avatarImg.height/2 - self.margin;
@@ -184,6 +220,10 @@ function GameView(paper, loginUsers, curSessionUser) {
 			if(player.isLord) {
 				drawLordFlag(avatarPos, refVec);
 			}
+			
+			self.playerViews[self.playerViews.length] = { 
+				playerName: player.name, nameObject: playerName, avatarObject: avatar
+			};
 		}
 		view.draw();
 	}
@@ -236,9 +276,7 @@ function GameView(paper, loginUsers, curSessionUser) {
 		
 		//// 2. init seat (comment for game hall)
 		//initSeat();
-		
-		waitPlayerTimerId = setInterval(_waitForPlayers(), 10);
-		
+
 		return this.players;
 	}
 
@@ -259,7 +297,7 @@ function GameView(paper, loginUsers, curSessionUser) {
 				self.players[i].avatar = 'avatar';
 			}
 		}
-		drawPlayers(self.players, self.sessionUser);
+		drawPlayers(self.players, self.sessionPlayer);
 		if(self.players.length < 3)
 			return;
 
