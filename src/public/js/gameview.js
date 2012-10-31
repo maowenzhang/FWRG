@@ -138,8 +138,8 @@ function GameView(paper) {
 		for(i = 0; i < obsoletes.length; ++i) {
 			idx = obsoletes[i];
 			playerview = self.playerViews[idx];
-			project.activeLayer.removeChildren(playerview.nameObject.index);
-			project.activeLayer.removeChildren(playerview.avatarObject.index);
+			playerview.nameObject.remove();
+			playerview.avatarObject.remove();
 			playerview.nameObject = null;
 			playerview.avatarObject = null;
 			self.playerViews.splice(idx, 1);
