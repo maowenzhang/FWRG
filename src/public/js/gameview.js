@@ -29,7 +29,7 @@ function GameView(paper, loginUsers, curSessionUser) {
 		var img = document.createElement("img");
 		img.id = id;
 		img.src = src;
-		img.style = style;
+		img.style.display = "none";
 		return img;
 	}
 
@@ -215,8 +215,15 @@ function GameView(paper, loginUsers, curSessionUser) {
 		
 		// get the dimension of the card
 		var cardImg = document.getElementById('1-1');
-		this.cardW = cardImg.width;
-		this.cardH = cardImg.height;
+		// the size is not got in IE, create a new image object to fix the problem
+		// need revisit the problem to get better fix
+		var imageForSize = new Image();
+		imageForSize.src = cardImg.src;
+		this.cardW = imageForSize.width;
+		this.cardH = imageForSize.height;
+		imageForSize = null;
+		
+		console.log(view.size.width);
 		
 		// some other useful location info
 		this.myPositionInfo = this._calcMyPositionInfo(20);
@@ -524,18 +531,21 @@ function GameView(paper, loginUsers, curSessionUser) {
 	function drawButtons() {
 		var buttons = ['chupai', 'buchu', 'tishi'];
 		var btnImg = document.getElementById(buttons[0]);
-		var totalW = btnImg.width*3 + 2*self.offset;
-		var x = (self.viewSize.width - totalW)/2 + btnImg.width/2;
+		var imgForSize = new Image();
+		imgForSize.src = btnImg.src;
+		var totalW = imgForSize.width*3 + 2*self.offset;
+		var x = (self.viewSize.width - totalW)/2 + imgForSize.width/2;
 		var y = self.viewSize.height - self.cardH - 3*self.offset;
 		
 		var btn;
 		for(var i = 0; i < buttons.length; ++i)
 		{
-			var x1 = x + i * btnImg.width + i * self.offset;
+			var x1 = x + i * imgForSize.width + i * self.offset;
 			btn = new paper.Raster(document.getElementById(buttons[i]));
 			btn.position = new Point(x1, y);
 			btn.name = buttons[i];
 		}
+		imgForSize = null;
 		view.draw();
 	}
 }
