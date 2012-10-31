@@ -152,6 +152,8 @@
 			console.log('before install paper');
 			paper.setup('paper');
 			console.log('after install paper');
+			var loginUsers = ["lori", "andre", "bruce"];
+			var curSessionUser = "lori";
 			var gameview = new GameView(paper, loginUsers, curSessionUser);
 			var players = gameview.init();
 			// Create a simple drawing tool:

@@ -37,11 +37,11 @@ Player.prototype.allProperties = function() {
 	return info;
 }
 
-// function UserMgr() {
-	// this.addPlayer = function(name) {
-		// return new Player(name);
-	// };
-// }
+function UserMgr() {
+	this.addPlayer = function(name) {
+		return new Player(name);
+	};
+}
 
-//module.exports = new UserMgr();
+module.exports = new UserMgr();
 
