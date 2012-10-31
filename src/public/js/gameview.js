@@ -20,6 +20,7 @@ function GameView(paper) {
 
 	this.sessionPlayer = null;//gameSession.sessionPlayer();
 	this.players = null;//gameSession.joinedPlayers;
+	this.playerViews = [];
 	
 	var self = this;
 	
@@ -111,7 +112,38 @@ function GameView(paper) {
 	}
 
 	this.update = function() {
+		cleanPlayers(this.joinedPlayers);
 		drawPlayers(this.joinedPlayers, this.sessionPlayer);
+	}
+	
+	function cleanPlayers(players) {
+		if(!players)
+			return;
+		var existing, i, j;
+		var obsoletes = [];
+		for(j = 0; j < self.playerViews.length; ++j) {
+			existing = false;
+			for(i = 0; i < players.length; ++i) {
+				if(players[i].name == self.playerViews[j].playerName) {
+					existing = true;
+					break;
+				}
+			}
+			if(!existing) {
+				obsoletes[obsoletes.length] = j;
+			}
+		}
+		
+		var playerview, idx;
+		for(i = 0; i < obsoletes.length; ++i) {
+			idx = obsoletes[i];
+			playerview = self.playerViews[idx];
+			project.activeLayer.removeChildren(playerview.nameObject.index);
+			project.activeLayer.removeChildren(playerview.avatarObject.index);
+			playerview.nameObject = null;
+			playerview.avatarObject = null;
+			self.playerViews.splice(idx, 1);
+		}
 	}
 	
 	// Now this function just draw the players info without the cards.
@@ -119,15 +151,30 @@ function GameView(paper) {
 	{	
 		if(!players || !sessionPlayer)
 			return;
-			
+		
 		var card = null;
 		var x, y;
 		var suit, rank;
 		var id;
 		var avatarImg, avatarPos, refVec, playerName;
 		var numOtherPlayers = 0;
+		var existing;
 		for(var i = 0; i < players.length; ++i) {
 			var player = players[i];
+			// check if the player has been drawn.
+			existing = false;
+			for(var j = 0; j < self.playerViews.length; ++j) {
+				if(player && player.name == self.playerViews[j].playerName) {
+					existing = true;
+					break;
+				}
+			}
+			if(existing) {
+				if(player.name != sessionPlayer.name)
+					numOtherPlayers++;
+				continue;
+			}
+		
 			//var cards = player.cards;
 			// draw the avatar
 			avatarImg = document.getElementById(player.avatar);
@@ -173,6 +220,10 @@ function GameView(paper) {
 			if(player.isLord) {
 				drawLordFlag(avatarPos, refVec);
 			}
+			
+			self.playerViews[self.playerViews.length] = { 
+				playerName: player.name, nameObject: playerName, avatarObject: avatar
+			};
 		}
 		view.draw();
 	}
