@@ -37,36 +37,41 @@ function EventData(type, gameState) {
 	this.gameState = gameState;
 }
 
-function updateClients() {
-	
+function updateFromServerToClients(socket, eventdata) {
+	console.log("update from server to all clients!");
+	console.log("event data: ", eventdata);
+	socket.broadcast.emit('updateFromServer', eventdata);
+	socket.emit('updateFromServer', eventdata);
 }
 
 io.on('connection', function (socket) {
-
     // connected
-    socket.on('message', function (msg) {
-        console.log('Received message from client', msg);
-        socket.broadcast.emit('message', msg);
-    });
+	socket.on('message', function (msg) {
+		console.log('Received message from client', msg);
+		socket.broadcast.emit('message', msg);
+	});
 
-    // On get updates from clients
-    socket.on('updateFromClient', function (type, data) {
+	// Getting updates from clients
+	socket.on('updateFromClient', function (type, data) {
 		console.log("updateFromClient");
 		console.log("Received messge type: ", type);
 		console.log("received message data: ", data);
 		debugger
-		var gs = datamgr.getGameState("firstGame");
-		var eventdata = new EventData(type, gs);
+		var gs = datamgr.getGameState("firstGame");			
 		
 		if (type == "login"){
 			console.log("new user: " + data + " joined!");
 			// add new player
-			return;
+			gs.addPlayer(data);
 		}
-        		
-		console.log("event data: ", eventdata);
-        socket.broadcast.emit('updateFromServer', type, eventdata);
-    });
+		else if (type == "userReady") {
+			// update player status
+			
+		}
+		
+		var eventdata = new EventData(type, gs);
+		updateFromServerToClients(socket, eventdata);
+	});
 });
 
 //io.sockets.on('connection', function (socket) {

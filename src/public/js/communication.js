@@ -13,22 +13,26 @@ socket.on('disconnect', function () {
 });
 
 // On getting update from server to clients
-socket.on('updateFromServer', function(type, data) {
+//
+socket.on('updateFromServer', function(data) {
 	console.log("client receives updateFromServer");
+	console.log("get data from server: " + data);
 	// TODO: add handling when get updates from server
 	// Need to handle for different updating events and take proper action (such as: redraw game table)
 	// data: gameState object
 	//
 	
 	// New user login
-	if (type == "login") {
+	if (data.type == "login") {
+		//
+		
+		
+	}
+	else if (data.type == "") {
 	
 	}
-	else if (type == "") {
-	
-	}
-	else if (type == "") {
-	
+	else if (data.type == "") {
+		
 	}
 });
 
