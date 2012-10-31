@@ -1,4 +1,4 @@
-var player = require('./public/js/user.js');
+var userMgr = require('./userserver.js');
 
 // Define GameState class used to store game info
 //
@@ -17,11 +17,15 @@ function GameState(name) {
 	}
 	
 	this.addPlayer = function(name) {
+		console.log("add player");
 		if (this.getPlayer(name)) {
+			console.log("already has player: " + name);
 			return true;
 		}
 		
-		this.players.push(name);
+		var newplayer = userMgr.addPlayer(name);
+		console.log("create new player: " + newplayer);
+		this.players.push(newplayer);
 	}
 }
 
