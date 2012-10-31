@@ -50,8 +50,8 @@ io.on('connection', function (socket) {
     });
 
     // On get updates from clients
-    socket.on('updateToServer', function (type, data) {
-		console.log("updateToServer");
+    socket.on('updateFromClient', function (type, data) {
+		console.log("updateFromClient");
 		console.log("Received messge type: ", type);
 		console.log("received message data: ", data);
 		debugger
@@ -61,16 +61,11 @@ io.on('connection', function (socket) {
 		if (type == "login"){
 			console.log("new user: " + data + " joined!");
 			// add new player
-			gs.
 			return;
 		}
-		
-        
-		
-		
-		
+        		
 		console.log("event data: ", eventdata);
-        socket.broadcast.emit('updateToClients', type, eventdata);
+        socket.broadcast.emit('updateFromServer', type, eventdata);
     });
 });
 
