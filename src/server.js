@@ -1,11 +1,18 @@
+// Start HTTP server
+//
 var http = require('http');
 var ecstatic = require('ecstatic')(__dirname + '/public');
-debugger
 var server = http.createServer(ecstatic)
   , io = require('socket.io').listen(server)
   , fs = require('fs');
 
 server.listen(8080);
+
+// Data storage
+//
+var datamgr = require('./datamgr.js');
+//datamgr.open();
+//datamgr.insert( {b:2} );
 
 // Router
 //
@@ -25,18 +32,45 @@ server.listen(8080);
 // Socket.io
 //
 // listen
+function EventData(type, gameState) {
+	this.type = type;
+	this.gameState = gameState;
+}
+
+function updateClients() {
+	
+}
+
 io.on('connection', function (socket) {
-    var currentData = "test";
+
     // connected
     socket.on('message', function (msg) {
         console.log('Received message from client', msg);
         socket.broadcast.emit('message', msg);
     });
 
-    // send data to all users
-    socket.on('update', function (type, data) {
-        console.log("Received messge are", type);
-        socket.broadcast.emit('update', type, data);
+    // On get updates from clients
+    socket.on('updateToServer', function (type, data) {
+		console.log("updateToServer");
+		console.log("Received messge type: ", type);
+		console.log("received message data: ", data);
+		debugger
+		var gs = datamgr.getGameState("firstGame");
+		var eventdata = new EventData(type, gs);
+		
+		if (type == "login"){
+			console.log("new user: " + data + " joined!");
+			// add new player
+			gs.
+			return;
+		}
+		
+        
+		
+		
+		
+		console.log("event data: ", eventdata);
+        socket.broadcast.emit('updateToClients', type, eventdata);
     });
 });
 
@@ -46,8 +80,3 @@ io.on('connection', function (socket) {
 //    console.log(data.my);
 //  });
 //});
-
-// data storage
-//var datamgr = require('./datamgr.js');
-//datamgr.open();
-//datamgr.insert( {b:2} );

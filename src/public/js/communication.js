@@ -12,9 +12,9 @@ socket.on('disconnect', function () {
 	sendUserEnd("lori");
 });
 
-// On getting update from server
-socket.on('update', function(type, data) {
-	console.log("update from server");
+// On getting update from server to clients
+socket.on('updateToClients', function(type, data) {
+	console.log("updateToClients");
 	// TODO: add handling when get updates from server
 	// Need to handle for different updating events and take proper action (such as: redraw game table)
 	// data: gameState object
@@ -25,7 +25,7 @@ socket.on('update', function(type, data) {
 // Util method for client to call/sending message to server
 //
 function sendUpdateToServer(type, data) {
-    socket.emit("update", type, data);
+    socket.emit("updateToServer", type, data);
 }
 
 function sendStatusRequestToServer() {

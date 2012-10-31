@@ -11,7 +11,8 @@
   },
   "scripts": {
     "start": "node src/server.js",
-	"debug": "node --debug-brk src/server.js"
+	"debug": "node --debug src/server.js",
+	"debugex": "node --debug-brk src/server.js"
   },
   "analyze": "false"
 }

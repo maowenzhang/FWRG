@@ -2,11 +2,18 @@
 var mongodb = require("mongodb"),
     mongoserver = new mongodb.Server('127.0.0.1', 27017, {}),
     db = new mongodb.Db("test", mongoserver, {safe:false});
-
+	gameStateMgr = require("./gamestate.js");
+	
 // Class use to manage data
 function DataMgr() {
-	this.gameState = null;	
+	this.gameState = null;
 	this.isOpened = false;
+	
+	this.getGameState = function(name) {
+		console.log("datamgr.getgamestate: " + name);
+		return gameStateMgr.getGame(name);
+	}
+	
 	// Basic operations
 	//
 	this.insertData = function(col1, obj) {
