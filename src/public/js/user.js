@@ -45,3 +45,26 @@ Player.prototype.allProperties = function() {
 
 //module.exports = new UserMgr();
 
+// Helper methods to check user login
+//
+function setCurUser(name) {
+	var curUser = new User(name);
+	//if (!localStorage.getItem('curUser')) {
+	//	localStorage.setItem('curUser', JSON.stringify(curUser));
+	//	return;
+	//}
+	// update if has?
+	localStorage.setItem('curUser', JSON.stringify(curUser));
+};
+
+function getCurUser() {
+	return localStorage.getItem('curUser');
+};
+
+function hasUserLogin() {
+	var curUser = getCurUser();
+	if (curUser != null) {
+		return true;
+	}
+	return false;
+};
