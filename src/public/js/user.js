@@ -58,7 +58,12 @@ function setCurUser(name) {
 };
 
 function getCurUser() {
-	return localStorage.getItem('curUser');
+	var str = localStorage.getItem('curUser');
+	if (!str) {
+		alert("false, no user set");
+		return "unknown";
+	}
+	return JSON.parse(str);
 };
 
 function hasUserLogin() {

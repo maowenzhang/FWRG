@@ -123,8 +123,7 @@ $(function() {
 		$( "#btn_letgo" )
 			.click(function() {
 				if (hasUserLogin()) {
-					var str = getCurUser();
-					var us = JSON.parse(str);
+					var us = getCurUser();
 					$("#name").val(us.name);
 					
 					// return;
@@ -138,8 +137,7 @@ $(function() {
 		
 		if (hasUserLogin()) {
 			//setCurUser("Lori");
-			var str = getCurUser();
-			var us = JSON.parse(str);
+			var us = getCurUser();
 			var welcomecontent = 'Welcome ' + us.name +' !<b class="caret"></b>';
 			$("#welcomeuser").html(welcomecontent);
 			$("#welcomeuser").show();

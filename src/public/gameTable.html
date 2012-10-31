@@ -17,9 +17,10 @@
 			sendUserEnd(curLoginUser);
 		});
 		function login() {
-			while(curLoginUser === '') {
-				curLoginUser = prompt('Please enter your name','');
-			}
+			//while(curLoginUser === '') {
+			//	curLoginUser = prompt('Please enter your name','');
+			//}
+			curLoginUser = getCurUser().name;
 			sendUserLogin(curLoginUser);
 		}
 
