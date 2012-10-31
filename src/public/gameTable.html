@@ -118,8 +118,9 @@
 		//		localStorage.setItem('loginUsers', $.toJSON(loginUsers));
 		//	}
 		//}
-		
-		//$(window).bind('beforeunload', function() {
+		var curLoginUser = '';
+		$(window).bind('beforeunload', function() {
+			sendUserEnd(curLoginUser);
 		//	var loginUsers = $.evalJSON(localStorage.getItem('loginUsers'));
 		//	var logoutUser = $.evalJSON(sessionStorage.getItem('loginUser'));
 		//	if(loginUsers && loginUsers.length > 0) {
@@ -131,14 +132,13 @@
 		//		}
 		//		localStorage.setItem('loginUsers', $.toJSON(loginUsers));
 		//	}
-		//});
+		});
 		function login() {
-			var userName = '';
-			while(userName === '')
+			while(curLoginUser === '')
 			{
-				userName=prompt('Please enter your name','');
+				curLoginUser = prompt('Please enter your name','');
 			}
-			sendUserLogin(userName);
+			sendUserLogin(curLoginUser);
 		}
 
 		// Use javascript directly, here install paperJS.
