@@ -40,15 +40,15 @@ function GameView(paper) {
 		// create image DOM elements for each card image
 		var path = "res/card/";
 		for(var i = 1; i < 5; ++i) {
-			for(var j = 1; j < 14; ++j) {
+			for(var j = 3; j < 16; ++j) {
 				var name = i + '-' + j;
 				var imgFile = path + name + '.gif';
 				res[counter++] = createImageElem(name, imgFile, "display: none;");
 			}
 		}
 		// queen & king
-		res[counter++] = createImageElem("s1", path+"s1.gif", "display: none;");
-		res[counter++] = createImageElem("s2", path+"s2.gif", "display: none;");
+		res[counter++] = createImageElem("5-16", path+"5-16.gif", "display: none;");
+		res[counter++] = createImageElem("5-17", path+"5-17.gif", "display: none;");
 		// rear
 		res[counter++] = createImageElem("rear", path+"rear.gif", "display: none;");
 		
@@ -161,6 +161,8 @@ function GameView(paper) {
 		var existing;
 		for(var i = 0; i < players.length; ++i) {
 			var player = players[i];
+			var isSessionPlayer = (player.name == sessionPlayer.name);
+			
 			// check if the player has been drawn.
 			existing = false;
 			for(var j = 0; j < self.playerViews.length; ++j) {
@@ -172,15 +174,18 @@ function GameView(paper) {
 			if(existing) {
 				if(player.name != sessionPlayer.name)
 					numOtherPlayers++;
-				continue;
 			}
+			
+			drawCards(player, isSessionPlayer, numOtherPlayers);
 		
+			if(existing) continue;
+			
 			//var cards = player.cards;
 			// draw the avatar
 			avatarImg = document.getElementById(player.avatar);
 			avatar = new paper.Raster(avatarImg);
 			
-			if(player.name == sessionPlayer.name) {
+			if(isSessionPlayer) {
 				// calc the avatar pos for this player
 				x = avatarImg.width*2.5;
 				y = self.viewSize.height - avatarImg.height/2 - self.margin;
@@ -227,6 +232,40 @@ function GameView(paper) {
 		}
 		view.draw();
 	}
+	
+	function drawCards(player, isSessionPlayer, numOtherPlayers) {
+		if(!player)
+			return;
+			
+		var cards = player.cards;
+		var x, y, card;
+		var num = cards.length - 1;
+		
+		for(var i = 0; i < cards.length; ++i) {
+			card = cards[i];
+			if(isSessionPlayer)
+			{
+				x = self.myPositionInfo.center.x; 
+				y = self.myPositionInfo.center.y;
+				// always draw the last delived card
+				var cardRaster = new paper.Raster(document.getElementById(card.id));
+				cardRaster.name = card.id;
+				cardRaster.position = new Point(x+num*self.offset, y);
+				
+				cardObjects.push(cardRaster);
+			}
+			else
+			{
+				var totalH = (cards.length-1)*self.offset + self.cardH;
+				var offset = self.offset+self.cardW*2.5;
+				x = (numOtherPlayers==0) ? offset : (self.viewSize.width-offset);
+				y = (self.viewSize.height - totalH)/2;				
+				var cardRaster = new paper.Raster(document.getElementById('rear'));
+				cardRaster.name = 'rear'+i;
+				cardRaster.position = new Point(x, y+num*self.offset);
+			}
+		}
+	}
 
 	var currentPlayer = 0;
 	var timerId;
@@ -254,7 +293,7 @@ function GameView(paper) {
 		}
 		
 		// get the dimension of the card
-		var cardImg = document.getElementById('1-1');
+		var cardImg = document.getElementById('1-3');
 		// the size is not got in IE, create a new image object to fix the problem
 		// need revisit the problem to get better fix
 		var imageForSize = new Image();

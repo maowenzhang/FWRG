@@ -59,11 +59,3 @@ Array.prototype.remove = function(val) {
 		this.splice(index, 1);
 	}
 };
-Array.prototype.contains = function(a, obj) {
-        for (var i = 0; i < a.length; i++) {
-            if (a[i] === obj) {
-                return true;
-            }
-        }
-        return false;
-    }

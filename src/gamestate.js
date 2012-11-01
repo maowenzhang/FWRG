@@ -1,4 +1,5 @@
 var userMgr = require('./userserver.js');
+var gameLogic = require('./card.js');
 
 // Define GameState class used to store game info
 //
@@ -6,6 +7,8 @@ function GameState(name) {
 	this.name = name;
 	this.players = [];
 	this.activePlayer = null;
+	this.deck = null;
+	this.started = false;
 	
 	this.getPlayer = function(name) {
 		for (var i=0; i<this.players.length; i++) {
@@ -14,6 +17,12 @@ function GameState(name) {
 			}
 		}
 		return null;
+	}
+	
+	this.getPlayerByIndex = function(index) {
+		if(index >= this.players.length)
+			return null;
+		return this.players[index];
 	}
 	
 	this.addPlayer = function(name) {
@@ -42,6 +51,40 @@ function GameState(name) {
 			this.players.splice(idx, 1); 
 			console.log("player " + name + " is removed");
 		}
+	}
+	
+	// If all players are ready, we think the game is ready to play around.
+	this.allReady = function() {
+		if(this.players.length < 3)
+			return false;
+		for(var i = 0; i < this.players.length; ++i) {
+			if(!this.players[i].isReady)
+				return false;
+		}
+		return true;
+	}
+	
+	// If all players are ready, we can start game automatically.
+	this.tryStartGame = function() {
+		if(!this.allReady())
+			return false;
+		this.deck = gameLogic.newDeck();
+		this.deck.shuffle();
+		this.started = true;
+		
+		// Decide the lord randomly
+		var numPlayer = this.players.length;
+		var lordIdx = ((Math.random * numPlayer) % numPlayer) >> 0;
+		this.players[lordIdx].isLord = true;
+
+		return true;
+	}
+	
+	this.endGame = function() {
+		if(!this.started)
+			return;
+		this.started = false;
+		// Any other things need to do?..
 	}
 }
 

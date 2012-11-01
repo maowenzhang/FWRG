@@ -93,3 +93,11 @@ function sendUserEnd(playername) {
     sendUpdateToServer("end", playername);
 	gameSession.endSession();
 }
+
+function selectSeat(playername, tableIdx, seatIdx) {
+	var data = { playerName: playername, 
+				 tableIndex: tableIdx,
+				 seatIndex: seatIdx
+			   };
+    socket.emit("updateFromClient", "selectSeat", data);
+}

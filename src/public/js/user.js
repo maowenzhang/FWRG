@@ -22,6 +22,8 @@ function Player(name) {
 	this.isLord = false;
 	// Player's cards on table
 	this.outcards = [];
+	// The seat number that the player sits.
+	this.seat = -1;
 }
 
 // Player derives from User

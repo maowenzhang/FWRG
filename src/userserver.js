@@ -23,6 +23,9 @@ function Player(name) {
 	// Player's cards on table
 	this.outcards = [];
 	this.isReady = false;
+	// The table/seat index that the player sits.
+	this.table = -1;
+	this.seat = -1;
 }
 
 // Player derives from User

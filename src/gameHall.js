@@ -97,3 +97,21 @@ function GameHall(numTables, numSeats) {
 		return null;
 	}
 }
+
+function GameRoomState() {
+	this.gameHall = null;
+	this.numTables = 1;
+	this.numSeats = 3;
+	
+	this.getGameHall = function() {
+		if(!this.numTables || !this.numSeats || this.numSeats < 3)
+			return null;
+			
+		if(!this.gameHall) {
+			this.gameHall = new GameHall(this.numTables, this.numSeats);
+		}
+		return this.gameHall;
+	}
+}
+
+module.exports = new GameRoomState();

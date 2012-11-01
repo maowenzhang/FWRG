@@ -29,6 +29,13 @@ var datamgr = require('./datamgr.js');
 //  });
 //}
 
+var roomState = require('./gameHall.js');
+// set the param of game hall
+roomState.numTables = 16;
+roomState.numSeats = 3;
+// only one game hall for all game states..
+var gameHall = roomState.getGameHall();
+		
 // Socket.io
 //
 // listen
@@ -58,6 +65,7 @@ io.on('connection', function (socket) {
 		
 		var gs = datamgr.getGameState("firstGame");
 		var p1ayername = data.playerName;
+		var gameTable, player;
 		
 		if (type == "login"){
 			console.log("player: " + p1ayername + " joined!");
@@ -68,10 +76,47 @@ io.on('connection', function (socket) {
 			console.log("player: " + p1ayername + " is ready!");
 			var p1 = gs.getPlayer(p1ayername);
 			p1.isReady = true;
+			// try to start the game and deliver cards..
+			if(gs.tryStartGame()) {
+				console.log(gs.deck.cards);
+				var remainCards = 3;
+				var curPlayer = 0;
+				var cards = gs.deck.cards;
+				while(cards.length > 0) {
+					console.log(curPlayer);
+					player = gs.getPlayerByIndex(curPlayer++);
+					if(!player) {
+						console.log('invalid player');
+						break;
+					}
+					if(cards.length > remainCards || player.isLord) {
+						player.cards[player.cards.length] = cards[0];
+						cards.splice(0, 1); 
+						console.log(cards.length);
+					}
+					
+					var eventdata = new EventData("deliverCard", gs);
+					updateFromServerToClients(socket, eventdata);
+					
+					if(curPlayer > 2) curPlayer = 0;
+				}
+			}
 		}
 		else if (type == "end") {
 			console.log("player: " + p1ayername + " left!");
 			gs.removePlayer(p1ayername);
+			//TODO: consider the observer's leave (since it won't affect the game progress.
+			gs.endGame();
+		}
+		else if (type == "selectSeat") {
+			console.log(data.playerName + " selected the seat ( table: " + data.tableIndex + ", seat: " + data.seatIndex);
+			player = gs.getPlayer(p1ayername);
+			if(!player) {
+				console.log('ERROR: invalid player ' + data.playerName);
+			} else {
+				player.table = data.tableIndex;
+				player.seat = data.seatIndex;
+			}
 		}
 		
 		var eventdata = new EventData(type, gs);
