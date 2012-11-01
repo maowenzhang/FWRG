@@ -26,6 +26,7 @@ function GameSession() {
 	}
 }
 var gameSession = new GameSession();
+var curPlayerName = getCurUser().name;
 
 // Connected to server
 socket.on('connect', function () {
@@ -42,8 +43,9 @@ socket.on('disconnect', function () {
 // On getting update from server to clients
 //
 socket.on('updateFromServer', function(data) {
-	console.log("client receives updateFromServer");
-	console.log("get data from server: " + data);
+	console.log("/n=============== updateFromServer, type: " + data.type);
+	console.log("Received data: ", data);
+	
 	// TODO: add handling when get updates from server
 	// Need to handle for different updating events and take proper action (such as: redraw game table)
 	// data: gameState object
@@ -64,7 +66,9 @@ socket.on('updateFromServer', function(data) {
 
 // Util method for client to call/sending message to server
 //
-function sendUpdateToServer(type, data) {
+function sendUpdateToServer(type, input) {
+	var data = {};
+	data.playerName = curPlayerName;
     socket.emit("updateFromClient", type, data);
 }
 
