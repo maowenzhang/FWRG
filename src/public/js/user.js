@@ -60,7 +60,7 @@ function setCurUser(name) {
 function getCurUser() {
 	var str = localStorage.getItem('curUser');
 	if (!str) {
-		alert("false, no user set");
+		//alert("false, no user set");
 		return "unknown";
 	}
 	return JSON.parse(str);
