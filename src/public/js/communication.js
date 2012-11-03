@@ -2,27 +2,32 @@ var socket = io.connect('http://localhost:8080');
 
 function GameSession() {
 	this.view = null; // game view..
-	this.joinedPlayers = null;
 	this.sessionPlayerName = '';
-	this.sessionPlayer = function() {
-		if(!this.joinedPlayers || !this.sessionPlayerName)
+	
+	this.sessionPlayer = function(gameState) {
+		var joinedPlayers = gameState.players;
+		if(!joinedPlayers || !this.sessionPlayerName)
 			return null;
-		for(var i = 0; i < this.joinedPlayers.length; ++i) {
-			var player = this.joinedPlayers[i];
+		var player = null;
+		for(var i = 0; i < joinedPlayers.length; ++i) {
+			player = joinedPlayers[i];
 			if(player && player.name == this.sessionPlayerName)
 				return player;
 		}
 		return null;
 	}
+	
 	this.endSession = function() {
-		this.view = null; 
-		this.joinedPlayers = null;
+		this.gameState = null;
 		this.sessionPlayerName = '';
 	}
-	this.updateView = function() {
-		this.view.sessionPlayer = this.sessionPlayer();
-		this.view.joinedPlayers = this.joinedPlayers;
-		this.view.update();
+	
+	this.updateView = function(data) {
+		var event = { gameState: data.gameState,
+					  eventType: data.type,
+					  sessionPlayer: this.sessionPlayer(data.gameState)
+					};
+		this.view.update(event);
 	}
 }
 var gameSession = new GameSession();
@@ -60,8 +65,7 @@ socket.on('updateFromServer', function(data) {
 	}
 	
 	// Update session..
-	gameSession.joinedPlayers = data.gameState.players;
-	gameSession.updateView();
+	gameSession.updateView(data);
 });
 
 // Util method for client to call/sending message to server

@@ -14,12 +14,13 @@ function GameView(paper) {
 	// track the active player, which needs to deliver cards or
 	// pass.
 	this.activePlayer = null;
+	
 	// store the hit test result.
 	this.hitObject = null;
 	var cardObjects = []; // record raster object of current player
 
-	this.sessionPlayer = null;//gameSession.sessionPlayer();
-	this.players = null;//gameSession.joinedPlayers;
+	this.sessionPlayer = null;
+	this.gameState = null;
 	this.playerViews = [];
 	
 	var self = this;
@@ -111,13 +112,17 @@ function GameView(paper) {
 		return lord;
 	}
 
-	this.update = function() {
-		cleanPlayers(this.joinedPlayers);
-		drawPlayers(this.joinedPlayers, this.sessionPlayer);
+	this.update = function(data) {
+		this.gameState = data.gameState;
+		this.sessionPlayer = data.sessionPlayer;
+		
+		cleanPlayers();
+		drawPlayers();
 	}
 	
-	function cleanPlayers(players) {
-		if(!players)
+	function cleanPlayers() {
+		var players = self.gameState.players;
+		if(!players || players.length==0)
 			return;
 		var existing, i, j;
 		var obsoletes = [];
@@ -147,8 +152,10 @@ function GameView(paper) {
 	}
 	
 	// Now this function just draw the players info without the cards.
-	function drawPlayers(players, sessionPlayer)
+	function drawPlayers()
 	{	
+		var sessionPlayer = self.sessionPlayer;
+		var players = self.gameState.players;
 		if(!players || !sessionPlayer)
 			return;
 		
@@ -171,13 +178,14 @@ function GameView(paper) {
 					break;
 				}
 			}
+			
+			drawCards(player, isSessionPlayer, numOtherPlayers);
+			
 			if(existing) {
 				if(player.name != sessionPlayer.name)
 					numOtherPlayers++;
 			}
 			
-			drawCards(player, isSessionPlayer, numOtherPlayers);
-		
 			if(existing) continue;
 			
 			//var cards = player.cards;
@@ -408,6 +416,9 @@ function GameView(paper) {
 			if(hitObject instanceof Raster) {
 				if(hitObject.image && hitObject.name && hitObject.name.substring(0, 4) != 'rear') {
 				
+					var players = this.gameState.players;
+					if(!players || players.length == 0)
+						return;
 					if(hitObject.name == "chupai")
 					{
 						takeCardsOut(this.players[0]);		
@@ -415,7 +426,7 @@ function GameView(paper) {
 					else
 					{
 						// active player
-						var card = findCard(this.players[0].cards, hitObject.name);
+						var card = findCard(players[0].cards, hitObject.name);
 						if(card) {
 							if(card.selected) {
 								hitObject.position.y = hitObject.position.y + this.offset;
