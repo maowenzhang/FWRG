@@ -28,14 +28,15 @@
 		
 		// Only executed our code once the DOM is ready.
 		$(document).ready(function(){
-		
 			paper.setup('paper');
 			
 			var gameview = new GameView(paper);
+			gameSession.view = gameview;
+			loadImageResources(gameview);
 			
 			login();
-			gameSession.view = gameview;
-			gameview.init();
+			//
+			//gameview.init();
 			
 			// Create a simple drawing tool:
 			var tool = new Tool();
@@ -69,5 +70,6 @@
 <body>
 	<canvas id="paper" resize></canvas>
 	<div id="resContainer"></div>
+	
 </body>
 </html>

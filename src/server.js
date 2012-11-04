@@ -92,7 +92,7 @@ io.on('connection', function (socket) {
 					if(cards.length > remainCards || player.isLord) {
 						player.cards[player.cards.length] = cards[0];
 						cards.splice(0, 1); 
-						console.log(cards.length);
+						//console.log(cards.length);
 					}
 					
 					var eventdata = new EventData("deliverCard", gs);

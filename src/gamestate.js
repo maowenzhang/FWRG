@@ -66,7 +66,7 @@ function GameState(name) {
 	
 	// If all players are ready, we can start game automatically.
 	this.tryStartGame = function() {
-		if(!this.allReady())
+		if(this.started || !this.allReady())
 			return false;
 		this.deck = gameLogic.newDeck();
 		this.deck.shuffle();

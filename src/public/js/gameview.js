@@ -1,3 +1,115 @@
+function ImageLoader(){
+	var self = this;
+	self.type="ImageLoader";
+	self.loadtype = "";
+	self.content = null;
+	self.oncomplete = null;
+	self.event = {};
+};
+ImageLoader.prototype = {
+	addEventListener:function(type,listener){
+		var self = this;
+		if(type == 'COMPLETE'){
+			self.oncomplete = listener;
+		}
+	},
+	load:function (src,loadtype){
+		var self = this;
+		self.loadtype = loadtype;
+		if(self.loadtype == "image"){
+			self.content = new Image();
+			self.content.onload = function(){
+				console.log('image loaded');
+				if(self.oncomplete){
+					self.event.currentTarget = self.content;
+					self.oncomplete(self.event);
+				}
+			};
+			self.content.src = src; 
+		}
+	}
+};
+
+function $ResLoadManager(){};
+$ResLoadManager.prototype = {
+	load: function($list,$onupdate,$oncomplete){
+		this.list=$list,this.onupdate=$onupdate,this.oncomplete=$oncomplete;
+		this.loader=null,this.loadIndex=0,this.result=[];
+		this.loadStart();
+	},
+	loadStart: function(){
+		self = resLoadMgr;
+		if(self.loadIndex >= self.list.length){
+			self.oncomplete(self.result);
+			return;
+		}
+		self.loader = new ImageLoader();
+		self.loader.addEventListener('COMPLETE',self.loadComplete);
+		self.loader.load(self.list[self.loadIndex].file,"image");
+	},
+	loadComplete: function(){
+		self = resLoadMgr;
+		self.result[self.list[self.loadIndex].id] = self.loader.content;
+		self.loadIndex++;
+		if(self.onupdate){
+			self.onupdate(Math.floor(self.loadIndex*100/self.list.length));
+		}
+		self.loadStart();
+	}
+};
+
+(function(){
+	resLoadMgr = new $ResLoadManager();
+})();
+
+var resImages = {};
+function loadImageResources(gameView)
+{
+	this.gameView = gameView;
+	var self = this;
+	
+	var imgData = new Array(
+		{ id:'background', 			file: './res/img/background.png' },
+		{ id:'avatar', 				file: './res/img/avatar.png' },
+		{ id:'avatar2', 			file: './res/img/avatar2.png' },
+		{ id:'Lord', 				file: './res/img/Lord.png' },
+		{ id:'chupai', 				file: './res/img/chupai.png' },
+		{ id:'active_chupai', 		file: './res/img/active_chupai.png' },
+		{ id:'buchu', 				file: './res/img/buchu.png' },
+		{ id:'active_buchu', 		file: './res/img/active_buchu.png' },
+		{ id:'tishi', 				file: './res/img/tishi.png' },
+		{ id:'active_tishi', 		file: './res/img/active_tishi.png' },
+		{ id:'jiaodizhu', 			file: './res/img/jiaodizhu.png' },
+		{ id:'active_jiaodizhu',	file: './res/img/active_jiaodizhu.png' },
+		{ id:'bujiao', 				file: './res/img/bujiao.png' },
+		{ id:'active_bujiao', 		file: './res/img/active_bujiao.png' },
+		{ id:'5-16', 				file: './res/card/5-16.gif' },
+		{ id:'5-17', 				file: './res/card/5-17.gif' },
+		{ id:'rear', 				file: './res/card/rear.gif' }
+	);
+	path = "./res/card/";
+	for(var i = 1; i < 5; ++i) {
+		for(var j = 3; j < 16; ++j) {
+			var _id = i + '-' + j;
+			var _imgFile = path + _id + '.gif';
+			imgData[imgData.length] = { id: _id, file: _imgFile };
+		}
+	}
+		
+	resLoadMgr.load(
+		imgData,
+		function(progress){
+			// show the progress..
+		},
+		function(result){
+			// store the all image results
+			resImages = result;
+			// now init the game view..
+			self.gameView.init();
+		}
+	);
+}
+
 function GameView(paper) {
 
 	// reference the object in paper.js.
@@ -22,58 +134,7 @@ function GameView(paper) {
 	this.sessionPlayer = null;
 	this.gameState = null;
 	this.playerViews = [];
-	
 	var self = this;
-	
-	function createImageElem(id, src, style)
-	{
-		var img = document.createElement("img");
-		img.id = id;
-		img.src = src;
-		img.style.display = "none";
-		return img;
-	}
-
-	function loadResources()
-	{
-		var res = [];
-		var counter = 0;
-		// create image DOM elements for each card image
-		var path = "res/card/";
-		for(var i = 1; i < 5; ++i) {
-			for(var j = 3; j < 16; ++j) {
-				var name = i + '-' + j;
-				var imgFile = path + name + '.gif';
-				res[counter++] = createImageElem(name, imgFile, "display: none;");
-			}
-		}
-		// queen & king
-		res[counter++] = createImageElem("5-16", path+"5-16.gif", "display: none;");
-		res[counter++] = createImageElem("5-17", path+"5-17.gif", "display: none;");
-		// rear
-		res[counter++] = createImageElem("rear", path+"rear.gif", "display: none;");
-		
-		// avatar, background & lord
-		path = "res/img/";
-		res[counter++] = createImageElem("avatar", path+"avatar.png", "display: none;");
-		res[counter++] = createImageElem("avatar2", path+"avatar2.png", "display: none;");
-		res[counter++] = createImageElem("background", path+"background.png", "display: none;");
-		res[counter++] = createImageElem("Lord", path+"Lord.png", "display: none;");
-		
-		// some button resources
-		res[counter++] = createImageElem("chupai", path+"chupai.png", "display: none;");
-		res[counter++] = createImageElem("active_chupai", path+"active_chupai.png", "display: none;");
-		res[counter++] = createImageElem("buchu", path+"buchu.png", "display: none;");
-		res[counter++] = createImageElem("active_buchu", path+"active_buchu.png", "display: none;");
-		res[counter++] = createImageElem("tishi", path+"tishi.png", "display: none;");
-		res[counter++] = createImageElem("active_tishi", path+"active_tishi.png", "display: none;");
-		res[counter++] = createImageElem("jiaodizhu", path+"jiaodizhu.png", "display: none;");
-		res[counter++] = createImageElem("active_jiaodizhu", path+"active_jiaodizhu.png", "display: none;");
-		res[counter++] = createImageElem("bujiao", path+"bujiao.png", "display: none;");
-		res[counter++] = createImageElem("active_bujiao", path+"active_bujiao.png", "display: none;");
-		
-		return res;
-	}
 
 	function createPlayerSeat(center, size, boundColor, fillColor)
 	{
@@ -88,24 +149,8 @@ function GameView(paper) {
 		return bound;
 	}
 
-	// mapping the card to card image element id.
-	function getCardImgId(suit, rank)
-	{
-		suit = 5 - suit;
-		var id = suit + '-' + rank;
-		if(rank == 14) // Ace
-			id = suit + '-1';
-		else if(rank == 15)
-			id = suit + '-2';
-		else if(rank == 16) // black joker
-			id = 's1';
-		else if(rank == 17)	// red joker
-			id = 's2';
-		return id;
-	}
-
 	function drawLordFlag(avatarPos, refVec) {
-		var lordImg = document.getElementById('Lord');
+		var lordImg = resImages['Lord'];
 		refVec = refVec.normalize(40+lordImg.height);
 		var lord = new paper.Raster(lordImg);
 		lord.position = new Point(avatarPos.x+refVec.x, avatarPos.y+refVec.y);
@@ -190,7 +235,7 @@ function GameView(paper) {
 			
 			//var cards = player.cards;
 			// draw the avatar
-			avatarImg = document.getElementById(player.avatar);
+			avatarImg = resImages[player.avatar];
 			avatar = new paper.Raster(avatarImg);
 			
 			if(isSessionPlayer) {
@@ -256,7 +301,7 @@ function GameView(paper) {
 				x = self.myPositionInfo.center.x; 
 				y = self.myPositionInfo.center.y;
 				// always draw the last delived card
-				var cardRaster = new paper.Raster(document.getElementById(card.id));
+				var cardRaster = new paper.Raster(resImages[card.id]);
 				cardRaster.name = card.id;
 				cardRaster.position = new Point(x+num*self.offset, y);
 				
@@ -268,7 +313,7 @@ function GameView(paper) {
 				var offset = self.offset+self.cardW*2.5;
 				x = (numOtherPlayers==0) ? offset : (self.viewSize.width-offset);
 				y = (self.viewSize.height - totalH)/2;				
-				var cardRaster = new paper.Raster(document.getElementById('rear'));
+				var cardRaster = new paper.Raster(resImages['rear']);
 				cardRaster.name = 'rear'+i;
 				cardRaster.position = new Point(x, y+num*self.offset);
 			}
@@ -291,71 +336,28 @@ function GameView(paper) {
 	var waitPlayerTimerId;
 	this.init = function()
 	{
-		// 0. load resources.
-		var res = loadResources();
-		var resContainer = document.getElementById('resContainer');
-		if(resContainer) {
-			for(var i = 0; i < res.length; ++i) {
-				resContainer.appendChild(res[i]);
-			}
-		}
-		
 		// get the dimension of the card
-		var cardImg = document.getElementById('1-3');
-		// the size is not got in IE, create a new image object to fix the problem
-		// need revisit the problem to get better fix
-		var imageForSize = new Image();
-		imageForSize.src = cardImg.src;
-		this.cardW = imageForSize.width;
-		this.cardH = imageForSize.height;
-		imageForSize = null;
-		
-		console.log(view.size.width);
+		var cardImg = resImages['1-3'];
+		console.log(cardImg);
+		this.cardW = cardImg.width;
+		this.cardH = cardImg.height;
 		
 		// some other useful location info
 		this.myPositionInfo = this._calcMyPositionInfo(20);
 
+		var bkgImg = resImages["background"];
+		//console.log('background', bkgImg.naturalWidth, bkgImg.naturalHeight);
+		
 		// 1. draw background, table
-		var bkg = new paper.Raster(document.getElementById("background"));
+		var bkg = new paper.Raster(bkgImg);
 		bkg.position = view.center;
 		//bkg.scale(1.3);
 		view.draw();
+		console.log(bkg.position);
 		
-		//// 2. init seat (comment for game hall)
-		//initSeat();
+		project.activeLayer.position = view.center;
 
 		return this.players;
-	}
-
-	function _waitForPlayers() {
-		//// draw the cards of each players.
-		//players = getPlayersInfo();
-		
-		for(var i = 0; i < self.loginUsers.length; ++i) {
-			var found = false;
-			for(var j = 0; j < self.players.length; ++j) {
-				if(self.loginUsers[i].name == self.players[j].name) {
-					found = true;
-					break;
-				}
-			}
-			if(!found) {
-				self.players[i] = new Player(self.loginUsers[i].name);
-				self.players[i].avatar = 'avatar';
-			}
-		}
-		drawPlayers(self.players, self.sessionPlayer);
-		if(self.players.length < 3)
-			return;
-
-		clearInterval(waitPlayerTimerId);
-		
-		// start to deliver cards to each player
-		deck = new Deck();
-		deck.shuffle();
-		
-		timerId = setInterval(deliverCards, 10);
-		return self.players;
 	}
 
 	function initSeat()
@@ -421,12 +423,12 @@ function GameView(paper) {
 						return;
 					if(hitObject.name == "chupai")
 					{
-						takeCardsOut(this.players[0]);		
+						takeCardsOut(this.sessionPlayer);		
 					}
 					else
 					{
 						// active player
-						var card = findCard(players[0].cards, hitObject.name);
+						var card = findCard(this.sessionPlayer.cards, hitObject.name);
 						if(card) {
 							if(card.selected) {
 								hitObject.position.y = hitObject.position.y + this.offset;
