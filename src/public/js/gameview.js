@@ -38,7 +38,7 @@ $ResLoadManager.prototype = {
 		this.loadStart();
 	},
 	loadStart: function(){
-		self = resLoadMgr;
+		var self = resLoadMgr;
 		if(self.loadIndex >= self.list.length){
 			self.oncomplete(self.result);
 			return;
@@ -48,7 +48,7 @@ $ResLoadManager.prototype = {
 		self.loader.load(self.list[self.loadIndex].file,"image");
 	},
 	loadComplete: function(){
-		self = resLoadMgr;
+		var self = resLoadMgr;
 		self.result[self.list[self.loadIndex].id] = self.loader.content;
 		self.loadIndex++;
 		if(self.onupdate){
