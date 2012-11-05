@@ -24,6 +24,8 @@ function Player(name) {
 	this.outcards = [];
 	// The seat number that the player sits.
 	this.seat = -1;
+	this.leftPlayer = null;
+	this.rightPlayer = null;
 }
 
 // Player derives from User
