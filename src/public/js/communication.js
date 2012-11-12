@@ -45,6 +45,11 @@ socket.on('disconnect', function () {
 	//sendUserEnd("lori");
 });
 
+// chat message
+socket.on("message", function (msg) {
+    $('#test').val($('#test').val() + msg + "\n");
+});
+
 // On getting update from server to clients
 //
 socket.on('updateFromServer', function(data) {
@@ -104,4 +109,8 @@ function selectSeat(playername, tableIdx, seatIdx) {
 				 seatIndex: seatIdx
 			   };
     socket.emit("updateFromClient", "selectSeat", data);
+}
+
+function sendChatMsg(msg) {
+    socket.emit("message", msg);
 }

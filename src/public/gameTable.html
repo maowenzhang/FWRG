@@ -37,35 +37,47 @@
 		paper.install(window);
 		
 		// Only executed our code once the DOM is ready.
-		$(document).ready(function(){
-			paper.setup('paper');
-			
-			var gameview = new GameView(paper);
-			gameSession.view = gameview;
-			loadImageResources(gameview);
-			
-			login();
-			//
-			//gameview.init();
-			
-			// Create a simple drawing tool:
-			var tool = new Tool();
-			tool.onMouseDown = function(event) {
-				//Test if any of the objects have been hit, and store the object
-				var options = {segments:true, stroke:true, fill: true, tolerance: 5};
-				var hitObject = gameview.hitTest(event.point, options);
-				gameview.handleMouseDownEvent(hitObject);
-			}
-			tool.onMouseUp = function(event) {
-				if(gameview.hitObject) {
-					if(gameview.hitObject instanceof Raster) {
-					} else {
-						//hitObject.fillColor = 'gray';
-						gameview.hitObject.strokeColor = 'yellow';
-						gameview.hitObject.strokeWidth = 1;
-					}
-				}
-			}
+		$(document).ready(function () {
+		    paper.setup('paper');
+		    var gameview = new GameView(paper);
+		    gameSession.view = gameview;
+		    loadImageResources(gameview);
+
+		    login();
+		    //
+		    //gameview.init();
+
+		    // Create a simple drawing tool:
+		    var tool = new Tool();
+		    tool.onMouseDown = function (event) {
+		        //Test if any of the objects have been hit, and store the object
+		        var options = { segments: true, stroke: true, fill: true, tolerance: 5 };
+		        var hitObject = gameview.hitTest(event.point, options);
+		        gameview.handleMouseDownEvent(hitObject);
+		    }
+		    tool.onMouseUp = function (event) {
+		        if (gameview.hitObject) {
+		            if (gameview.hitObject instanceof Raster) {
+		            } else {
+		                //hitObject.fillColor = 'gray';
+		                gameview.hitObject.strokeColor = 'yellow';
+		                gameview.hitObject.strokeWidth = 1;
+		            }
+		        }
+		    }
+		});
+
+		$(function () {
+		    $('#msginput').keypress(function (event) {
+		        if (event.which == 13) {
+		            event.preventDefault();
+
+		            sendChatMsg($('#msginput').val());
+
+		            $('#test').val($('#test').val() + $('#msginput').val() + "\n");
+		            $('#msginput').val('');
+		        }
+		    });
 		});
 	</script>
 	<style type="text/css">
@@ -78,8 +90,14 @@
 	</style>
 </head>
 <body>
-	<canvas id="paper" resize>Your explorer doesn't support canvas tag.</canvas>
-	<div id="resContainer"></div>
-	
+	<canvas id="paper" width='800' height='600'>Your explorer doesn't support canvas tag.</canvas>
+	<div id="resContainer">
+    </div>
+    <div id="msgbox">
+        <textarea cols="800" rows="8" id="test" style="border-bottom: border-width=24"></textarea>
+    </div>
+    <div id="input">
+        <textarea cols="800" rows="1" id="msginput" style="position: relative"></textarea>
+    </div>
 </body>
 </html>
