@@ -10,6 +10,8 @@
 	<script src="js/communication.js" type="text/javascript"></script>
 	<script src="js/gameview.js" type="text/javascript"></script>
 	<script type="text/javascript">
+
+	    userName = "";
 		
 		if (!window.console || !console.firebug) {
 			var names = ["log", "debug", "info", "warn", "error", "assert", "dir", "dirxml",
@@ -28,7 +30,8 @@
 			//while(curLoginUser === '') {
 			//	curLoginUser = prompt('Please enter your name','');
 			//}
-			curLoginUser = getCurUser().name;
+		    curLoginUser = getCurUser().name;
+		    userName = curLoginUser;
 			sendUserLogin(curLoginUser);
 			sendUserReady(curLoginUser);
 		}
@@ -72,9 +75,9 @@
 		        if (event.which == 13) {
 		            event.preventDefault();
 
-		            sendChatMsg($('#msginput').val());
+		            sendChatMsg(userName + " : " + $('#msginput').val());
 
-		            $('#test').val($('#test').val() + $('#msginput').val() + "\n");
+		            $('#test').val($('#test').val() + userName + " : " + $('#msginput').val() + "\n");
 		            $('#msginput').val('');
 		        }
 		    });
