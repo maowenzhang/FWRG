@@ -46,8 +46,8 @@ socket.on('disconnect', function () {
 });
 
 // chat message
-socket.on("message", function (msg) {
-    $('#test').val($('#test').val() + msg + "\n");
+socket.on("chatMsg", function (ctrlId, msg) {
+    updateChatMsg(ctrlId, msg);
 });
 
 // On getting update from server to clients
@@ -111,6 +111,6 @@ function selectSeat(playername, tableIdx, seatIdx) {
     socket.emit("updateFromClient", "selectSeat", data);
 }
 
-function sendChatMsg(msg) {
-    socket.emit("message", msg);
+function sendChatMsg(ctrlId, msg) {
+    socket.emit("chatMsg", ctrlId, msg);
 }

@@ -53,75 +53,81 @@ function updateFromServerToClients(socket, eventdata) {
 
 io.on('connection', function (socket) {
     // connected
-	socket.on('message', function (msg) {
-		console.log('Received message from client', msg);
-		socket.broadcast.emit('message', msg);
-	});
+    socket.on('message', function (msg) {
+        console.log('Received message from client', msg);
+        socket.broadcast.emit('message', msg);
+    });
 
-	// Getting updates from clients
-	socket.on('updateFromClient', function (type, data) {
-		console.log("/n=============== updateFromClient, type: " + type);
-		console.log("Received data: ", data);
-		
-		var gs = datamgr.getGameState("firstGame");
-		var p1ayername = data.playerName;
-		var gameTable, player;
-		
-		if (type == "login"){
-			console.log("player: " + p1ayername + " joined!");
-			// add new player
-			gs.addPlayer(p1ayername);
-		}
-		else if (type == "userReady") {
-			console.log("player: " + p1ayername + " is ready!");
-			var p1 = gs.getPlayer(p1ayername);
-			p1.isReady = true;
-			// try to start the game and deliver cards..
-			if(gs.tryStartGame()) {
-				console.log(gs.deck.cards);
-				var remainCards = 3;
-				var curPlayer = 0;
-				var cards = gs.deck.cards;
-				while(cards.length > 0) {
-					console.log(curPlayer);
-					player = gs.getPlayerByIndex(curPlayer++);
-					if(!player) {
-						console.log('invalid player');
-						break;
-					}
-					if(cards.length > remainCards || player.isLord) {
-						player.cards[player.cards.length] = cards[0];
-						cards.splice(0, 1); 
-						//console.log(cards.length);
-					}
-					
-					var eventdata = new EventData("deliverCard", gs);
-					updateFromServerToClients(socket, eventdata);
-					
-					if(curPlayer > 2) curPlayer = 0;
-				}
-			}
-		}
-		else if (type == "end") {
-			console.log("player: " + p1ayername + " left!");
-			gs.removePlayer(p1ayername);
-			//TODO: consider the observer's leave (since it won't affect the game progress.
-			gs.endGame();
-		}
-		else if (type == "selectSeat") {
-			console.log(data.playerName + " selected the seat ( table: " + data.tableIndex + ", seat: " + data.seatIndex);
-			player = gs.getPlayer(p1ayername);
-			if(!player) {
-				console.log('ERROR: invalid player ' + data.playerName);
-			} else {
-				player.table = data.tableIndex;
-				player.seat = data.seatIndex;
-			}
-		}
-		
-		var eventdata = new EventData(type, gs);
-		updateFromServerToClients(socket, eventdata);
-	});
+    // chat message
+    socket.on('chatMsg', function (ctrlId, msg) {
+        console.log('Received chat message from ', msg);
+        socket.broadcast.emit('chatMsg', ctrlId, msg);
+    });
+
+    // Getting updates from clients
+    socket.on('updateFromClient', function (type, data) {
+        console.log("/n=============== updateFromClient, type: " + type);
+        console.log("Received data: ", data);
+
+        var gs = datamgr.getGameState("firstGame");
+        var p1ayername = data.playerName;
+        var gameTable, player;
+
+        if (type == "login") {
+            console.log("player: " + p1ayername + " joined!");
+            // add new player
+            gs.addPlayer(p1ayername);
+        }
+        else if (type == "userReady") {
+            console.log("player: " + p1ayername + " is ready!");
+            var p1 = gs.getPlayer(p1ayername);
+            p1.isReady = true;
+            // try to start the game and deliver cards..
+            if (gs.tryStartGame()) {
+                console.log(gs.deck.cards);
+                var remainCards = 3;
+                var curPlayer = 0;
+                var cards = gs.deck.cards;
+                while (cards.length > 0) {
+                    console.log(curPlayer);
+                    player = gs.getPlayerByIndex(curPlayer++);
+                    if (!player) {
+                        console.log('invalid player');
+                        break;
+                    }
+                    if (cards.length > remainCards || player.isLord) {
+                        player.cards[player.cards.length] = cards[0];
+                        cards.splice(0, 1);
+                        //console.log(cards.length);
+                    }
+
+                    var eventdata = new EventData("deliverCard", gs);
+                    updateFromServerToClients(socket, eventdata);
+
+                    if (curPlayer > 2) curPlayer = 0;
+                }
+            }
+        }
+        else if (type == "end") {
+            console.log("player: " + p1ayername + " left!");
+            gs.removePlayer(p1ayername);
+            //TODO: consider the observer's leave (since it won't affect the game progress.
+            gs.endGame();
+        }
+        else if (type == "selectSeat") {
+            console.log(data.playerName + " selected the seat ( table: " + data.tableIndex + ", seat: " + data.seatIndex);
+            player = gs.getPlayer(p1ayername);
+            if (!player) {
+                console.log('ERROR: invalid player ' + data.playerName);
+            } else {
+                player.table = data.tableIndex;
+                player.seat = data.seatIndex;
+            }
+        }
+
+        var eventdata = new EventData(type, gs);
+        updateFromServerToClients(socket, eventdata);
+    });
 });
 
 //io.sockets.on('connection', function (socket) {

@@ -75,9 +75,11 @@
 		        if (event.which == 13) {
 		            event.preventDefault();
 
-		            sendChatMsg(userName + " : " + $('#msginput').val());
+                    // send the message to the server
+		            sendChatMsg("test", userName + " : " + $('#msginput').val());
 
-		            $('#test').val($('#test').val() + userName + " : " + $('#msginput').val() + "\n");
+                    // update the message on the local page
+		            updateChatMsg("test", userName + " : " + $('#msginput').val());
 		            $('#msginput').val('');
 		        }
 		    });

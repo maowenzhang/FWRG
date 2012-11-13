@@ -59,3 +59,8 @@ Array.prototype.remove = function(val) {
 		this.splice(index, 1);
 	}
 };
+
+// show the chat message
+function updateChatMsg(ctrlId, msg) {
+    $('#' + ctrlId).val($('#' + ctrlId).val() + msg + "\n");
+}
