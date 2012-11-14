@@ -64,8 +64,7 @@ $ResLoadManager.prototype = {
 })();
 
 var resImages = {};
-function loadImageResources(gameView)
-{
+function loadImageResources(gameView){
 	this.gameView = gameView;
 	var self = this;
 	
@@ -104,7 +103,8 @@ function loadImageResources(gameView)
 		},
 		function(result){
 			// store the all image results
-			resImages = result;
+			resImages = result;			
+
 			// now init the game view..
 			self.gameView.init();
 		}
@@ -158,14 +158,6 @@ function GameView(paper) {
 		return bound;
 	}
 
-	function drawLordFlag(avatarPos, refVec) {
-		var lordImg = self.resImages['Lord'];
-		refVec = refVec.normalize(40+lordImg.height);
-		var lord = new paper.Raster(lordImg);
-		lord.position = new Point(avatarPos.x+refVec.x, avatarPos.y+refVec.y);
-		return lord;
-	}
-
 	this.update = function(data) {
 		//this.gameState = data.gameState;
 		//this.sessionPlayer = data.sessionPlayer;
@@ -182,37 +174,7 @@ function GameView(paper) {
 		cleanPlayers();
 		drawPlayers();
 	}
-	
-	this.drawForDeliverCard = function(data)
-	{
-		var receiveCardPlayer = data.receiveCardPlayer;		
-		// redraw cards for this player		
-		updatePlayerView(receiveCardPlayer);
-	}
-	
-	function updatePlayerView(player)
-	{
-		for(var j = 0; j < self.playerViews.length; ++j)
-		{
-			if(player && player.name == self.playerViews[j].playerName)
-			{
-				for(var cardObj in self.playerViews[j].cardObjects)
-					cardObj.remove();
-				self.playerViews[j].splice(0, self.playerViews[j].cardObjects.length);
-				var isSessionPlayer = (self.sessionPlayer.name == player.name);
-				var atLeftSide = 0;
-				if(!isSessionPlayer)
-				{
-					if(self.sessionPlayer.leftPlayer.name == player.name)
-						atLeftSide = 1;
-				}
-				drawCards(player, self.playerViews[j], isSessionPlayer, atLeftSide);
-				view.draw();
-				break;
-			}
-		}
-	}
-	
+
 	function cleanPlayers() {
 		var players = self.gameState.players;
 		if(!players || players.length==0)
@@ -250,62 +212,75 @@ function GameView(paper) {
 		var sessionPlayer = self.sessionPlayer;
 		var players = self.gameState.players;
 		if(!players || !sessionPlayer)
-			return;
-			
-		drawPlayerView(sessionPlayer, true, 0);
+			return;	
+
+		// create playerView object for each player
 		for(var i = 0; i < players.length; ++i)
 		{
-			if(players[i].name == sessionPlayer.leftPlayer)
+			var player = players[i];
+			var playerView = null;
+			for(var j = 0; j < self.playerViews.length; ++j)
 			{
-				// draw left side player
-				drawPlayerView(players[i], false, 1);
+				if(player == self.playerViews[j].player)
+				{
+					playerView = self.playerViews[j];
+					break;
+				}
 			}
-			else if(players[i].name == sessionPlayer.rightPlayer)
+			if(!playerView)
 			{
-				// draw right side player
-				drawPlayerView(players[i], false, 0);
+				playerView = new PlayerView(player, self);
+				playerView.initProfile();
+				self.playerViews.push(playerView);
+			}
+			else
+			{
+				// update view if necessary
 			}
 		}
 		
-		function drawPlayerView(player, isSessionPlayer, atLeft)
+		view.draw();
+	}
+	
+	// PlayerView class to manage player's view initializaiton and update
+	function PlayerView(player, gameView)
+	{
+		this.player = player;
+		this.playerName = player.name;
+		this.cardObjects = [];		
+		var gView = gameView;
+		// draw profile -
+		// name
+		// profile
+		// lord flag
+		this.initProfile = function()
 		{
-			if(!player)
-				return;
-			for(var j = 0; j < self.playerViews.length; ++j)
-			{
-				if(player && player.name == self.playerViews[j].playerName)
-				{
-					// if the player profile is drawn
-					drawCards(sessionPlayer, self.playerViews[j], isSessionPlayer, atLeft);
-					return;
-				}
-			}
-
 			var x, y;
 			var id;
-			var avatarImg, avatarPos, refVec, playerName;
+			var avatarPos, refVec;
 			
 			var length = resImages.length;
-			avatarImg = resImages[player.avatar];
-			avatar = new paper.Raster(avatarImg);
+			var avatarImg = resImages[this.player.avatar];
+			var avatar = new paper.Raster(avatarImg);
 			
-			if(isSessionPlayer) {
+			if(this.player == gView.sessionPlayer) {
 				// calc the avatar pos for this player
 				x = avatarImg.width*2.5;
-				y = self.viewSize.height - avatarImg.height/2 - self.margin;
+				y = gView.viewSize.height - avatarImg.height/2 - gView.margin;
 				avatarPos = new Point(x, y);
 				refVec = new Point(1, -1);
 			} else {
-				var offset = self.offset+self.cardSize.width*2.5;
+				var offset = gView.offset+gView.cardSize.width*2.5;
 				// calc the avatar pos for this player
-				if(atLeft) {
+				var leftSidePlayer = (this.player.name == gView.sessionPlayer.leftPlayer);
+				if(leftSidePlayer) {
 					x = offset/2;
-					y = self.viewSize.height/2;
+					y = gView.viewSize.height/2;
 					avatarPos = new Point(x, y);
 					refVec = new Point(-1, -1);
 				} else {
-					x = self.viewSize.width-offset/2;
-					y = self.viewSize.height/2;
+					x = gView.viewSize.width-offset/2;
+					y = gView.viewSize.height/2;
 					avatarPos = new Point(x, y);
 					refVec = new Point(1, -1);
 				}
@@ -315,8 +290,8 @@ function GameView(paper) {
 			avatar.position = avatarPos;
 			
 			// draw the name of the player
-			playerName = new paper.PointText(new Point(avatar.position.x-avatarImg.width/2, avatar.position.y + avatarImg.height/2+self.margin));
-			playerName.content = player.name;
+			var playerName = new paper.PointText(new Point(avatar.position.x-avatarImg.width/2, avatar.position.y + avatarImg.height/2+self.margin));
+			playerName.content = this.player.name;
 			playerName.characterStyle = {
 				justification: 'center',
 				font: 'Arial Black',
@@ -325,53 +300,93 @@ function GameView(paper) {
 			};
 
 			// draw a avartar to represent the lord if the play is lord.
-			if(player.isLord) {
-				drawLordFlag(avatarPos, refVec);
+			if(this.player.isLord) {
+				this.lordObject = drawLordFlag(avatarPos, refVec);
 			}
-			var playerView = { playerName: player.name, nameObject: playerName, avatarObject: avatar};
-			self.playerViews.push(playerView);
-			
-			drawCards(sessionPlayer, playerView, isSessionPlayer, atLeft);
+			this.avatarObject = avatar;
+			this.nameObject = playerName;
 		}
 		
-		view.draw();
-	}
-	
-	function drawCards(player, playerView, isSessionPlayer, atLeft) {
-		if(!player)
-			return;
+		// call this function to draw view when deliver card to this player or chupai
+		this.updateCardsView = function()
+		{
+			if(!this.player)
+				return;
+			clearCards(this.cardObjects);
 			
-		var cards = player.cards;
-		var x, y, card;
-		var num = cards.length - 1;
-		playerView.cardObjects = [];
-		for(var i = 0; i < cards.length; ++i) {
-			card = cards[i];
-			if(isSessionPlayer)
+			var cards = this.player.cards;
+			for(var i = 0; i < cards.length; ++i)
 			{
-				x = self.myPositionInfo.center.x; 
-				y = self.myPositionInfo.center.y;
+				drawCard(this, cards[i]);
+			}
+		}
+		
+		// after deliver cards, call this functio to sort
+		this.sortCards = function()
+		{
+			this.player.cards.sort(Card.orderByRank);
+			this.updateCardsView();
+		}
+		
+		function drawCard(playerView, card)
+		{
+			if(playerView.player == gView.sessionPlayer)
+			{
+				var x = gView.myPositionInfo.center.x; 
+				var y = gView.myPositionInfo.center.y;
 				// always draw the last delived card
 				var cardRaster = new paper.Raster(resImages[card.id]);
 				cardRaster.name = card.id;
-				cardRaster.position = new Point(x+num*self.offset, y);
+				cardRaster.position = new Point(x+num*gView.offset, y);
 				
 				playerView.cardObjects.push(cardRaster);
 			}
 			else
 			{
-				var totalH = (cards.length-1)*self.offset + self.cardH;
-				var offset = self.offset+self.cardSize.width*2.5;
-				x = atLeft ? offset : (self.viewSize.width-offset);
-				y = (self.viewSize.height - totalH)/2;				
+				var leftSidePlayer = (playerView.player.name == gView.sessionPlayer.leftPlayer)
+				var totalH = (cards.length-1)*gView.offset + gView.cardH;
+				var offset = gView.offset+gView.cardSize.width*2.5;
+				var x = leftSidePlayer ? offset : (gView.viewSize.width-offset);
+				var y = (gView.viewSize.height - totalH)/2;
 				var cardRaster = new paper.Raster(resImages['rear']);
 				cardRaster.name = 'rear'+i;
-				cardRaster.position = new Point(x, y+num*self.offset);
+				cardRaster.position = new Point(x, y+num*gView.offset);
 				
 				playerView.cardObjects.push(cardRaster);
 			}
 		}
-	}
+		
+		function drawLordFlag(avatarPos, refVec) {
+			var lordImg = resImages['Lord'];
+			refVec = refVec.normalize(40+lordImg.height);
+			var lord = new paper.Raster(lordImg);
+			lord.position = new Point(avatarPos.x+refVec.x, avatarPos.y+refVec.y);
+			return lord;
+		}
+		
+		// private function
+		function clearCards(cardObjects)
+		{
+			for(var i = 0; i < cardObjects.length; ++i)
+			{
+				cardObjects[i].remove();
+			}
+			cardObjects.splice(0, cardObjects.length);
+		}
+		
+		this.clear = function()
+		{
+			if(!this.player)
+				return;
+			clearCards(this.cardObjects);
+			if(!this.avatarObject)
+				this.avatarObject.remove();
+			if(!this.nameObject)
+				this.nameObject.remove();
+			if(!this.lordObject)
+				this.lordObject.remove();
+		}
+	}	
 	
 	var currentPlayer = 0;
 	var timerId;
@@ -507,12 +522,21 @@ function GameView(paper) {
 		if(deck.cards.length == 0) {			
 	
 			clearInterval(timerId);			
-			sort(self.players[0]);
+			sort(self.sessionPlayer);
 			drawButtons();
 			return;
 		}
 		//console.log(deck.cards.toString());
-
+		var currentPlayerView;
+		for(var i = 0; i < self.playerViews.length; ++i)
+		{
+			if(currentPlayer.name == self.playerViews[i].playerName)
+			{
+				currentPlayerView = self.playerViews[i];
+				break;
+			}
+		}
+		
 		// deliver cards to each player		
 		var remainCards = 3;	
 		if(deck.cards.length == remainCards)
@@ -520,11 +544,11 @@ function GameView(paper) {
 			for(i = 0; i < remainCards; ++i)
 			{
 				// Assume the first player is the lord.				
-				if(self.players[0].isLord) {
-					self.players[0].cards.push(deck.cards[i]);
-					drawCard(deck.cards[i], 0);
+				if(currentPlayer.isLord) {
+					currentPlayer.cards.push(deck.cards[i]);
+					drawCard(currentPlayer, currentPlayerView, deck.cards[i]);
 				}
-			}			
+			}		
 			
 			var yOffset = self.margin + self.cardSize.height/2;
 			var x = (self.viewSize.width - self.cardSize.width*3 - self.margin*1.5)/2 + self.cardSize.width/2;
@@ -533,18 +557,18 @@ function GameView(paper) {
 			// The last 3 cards should be visible for all players.
 			var rearImg = resImages['rear'];
 			var card1 = deck.cards[deck.cards.length-1];
-			id = getCardImgId(card1.suit.value, card1.rank.value);
-			card = new paper.Raster(document.getElementById(id));
+			var img1 = resImages[card1.id];
+			card = new paper.Raster(img1);
 			card.position = new Point(x, y);			
 			
 			var card2 = deck.cards[deck.cards.length-2];
-			id = getCardImgId(card2.suit.value, card2.rank.value);
-			card = new paper.Raster(document.getElementById(id));
+			var img2 = resImages[card2.id];
+			card = new paper.Raster(img2);
 			card.position = new Point(x+self.cardSize.width+self.margin/2, y);
 			
 			var card3 = deck.cards[deck.cards.length-3];
-			id = getCardImgId(card3.suit.value, card3.rank.value);
-			card = new paper.Raster(document.getElementById(id));
+			var img3 = resImages[card3.id];
+			card = new paper.Raster(img3);
 			card.position = new Point(x+2*(self.cardSize.width+self.margin/2), y);
 			
 			deck.cards.remove(deck.cards[0]);
@@ -554,13 +578,22 @@ function GameView(paper) {
 		else
 		{
 			self.players[currentPlayer].cards.push(deck.cards[0]);
-			drawCard(deck.cards[0], currentPlayer);
+			drawCard(currentPlayer, currentPlayerView, deck.cards[0]);
 			deck.cards.remove(deck.cards[0]);			
 		}
-
-		currentPlayer++;
-		if(currentPlayer > 2)
-			currentPlayer = 0;
+		
+		var players = self.gameState.players;
+		for(var i = 0; i < players.length; ++i)
+		{
+			if(currentPlayer.rightPlayer == players[i].name)
+			{
+				currentPlayer = player[i];
+				break;
+			}
+		}
+		
+		if(deck.cards.length == 3)
+			currentPlayer = self.sessionPlayer;
 			
 		view.draw();
 	}
@@ -569,7 +602,19 @@ function GameView(paper) {
 	{
 		// it doesn't work
 		player.cards.sort(Card.orderByRank);
-		updateCardsPosition(player.cards);
+		for(var i = 0; i < self.playerViews.length; ++i)
+		{
+			if(player.name == self.playerViews[i].playerName)
+			{
+				var playerView = self.playerViews[i];
+				for(var j = 0; j < playerView.cardObjects.length; ++j)
+				{
+					playerView.cardObjects[j].remove();
+				}
+				playerView.cardObjects.splice(0, player.cardObjects.length);
+				drawCards(player, playerView);
+			}
+		}
 	}
 	
 	function takeCardsOut(player)
