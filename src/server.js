@@ -95,12 +95,24 @@ io.on('connection', function (socket) {
                         console.log('invalid player');
                         break;
                     }
-                    if (cards.length > remainCards || player.isLord) {
+					
+					if(cards.length == remainCards)
+					{
+						player = gs.lordPlayer();
+						for(var i = 0; i < remainCards; ++i)
+						{
+							player.cards.push(cards[i]);
+							gs.lastCards.push(cards[i]);
+						}
+						cards.splice(0, cards.length);
+					}
+                    else if (cards.length > remainCards) {
                         player.cards[player.cards.length] = cards[0];
                         cards.splice(0, 1);
                         //console.log(cards.length);
                     }
 
+					gs.activePlayer = player;
                     var eventdata = new EventData("deliverCard", gs);
                     updateFromServerToClients(socket, eventdata);
 

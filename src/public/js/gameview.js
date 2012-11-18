@@ -126,23 +126,19 @@ function GameView(paper) {
 	this.cardSize = { width:0, height:0};
 
 	// should be input, for test
-	this.gameState = {
-	players: [ {name:"Lori", pos: 1, leftPlayer: "Andre", rightPlayer: "Bruce", avatar: "avatar", cards: []}
-				, {name:"Bruce", pos: 2, leftPlayer: "Lori", rightPlayer: "Andre", avatar: "avatar", cards: []}
-				, {name:"Andre", pos: 3, leftPlayer: "Bruce", rightPlayer: "Lori", avatar: "avatar", cards: []} ],
-	activePlayer : {name:"Lori", pos: 1, leftPlayer: "Andre", rightPlayer: "Bruce", avatar: "avatar", cards: []}
-	};
+	this.gameState = null;
 	// track the active player, which needs to deliver cards or
 	// pass.
 	this.activePlayer = null;
 	
 	// store the hit test result.
-	this.hitObject = null;
-	
-	this.sessionPlayer = {name:"Lori", pos: 1, leftPlayer: "Andre", rightPlayer: "Bruce", avatar: "avatar", cards: []};
-	this.players = null;//gameSession.joinedPlayers;
-	
+	this.hitObject = null;	
+	this.sessionPlayer = null;
+	this.players = null;//gameSession.joinedPlayers;	
 	this.playerViews = [];
+	
+	this.lastCardObjs = []; // record dipai
+	
 	var self = this;
 
 	function createPlayerSeat(center, size, boundColor, fillColor)
@@ -159,20 +155,11 @@ function GameView(paper) {
 	}
 
 	this.update = function(data) {
-		//this.gameState = data.gameState;
-		//this.sessionPlayer = data.sessionPlayer;
-		
-		for(var i = 0; i < this.gameState.players.length; ++i)
-		{
-			if(this.gameState.players[i].name == data.sessionPlayer.name)
-			{
-				this.sessionPlayer = this.gameState.players[i];
-				break;
-			}
-		}
-		
+		this.gameState = data.gameState;
+		this.sessionPlayer = data.sessionPlayer;
 		cleanPlayers();
 		drawPlayers();
+		updatePlayersView(data);
 	}
 
 	function cleanPlayers() {
@@ -212,7 +199,7 @@ function GameView(paper) {
 		var sessionPlayer = self.sessionPlayer;
 		var players = self.gameState.players;
 		if(!players || !sessionPlayer)
-			return;	
+			return;
 
 		// create playerView object for each player
 		for(var i = 0; i < players.length; ++i)
@@ -242,12 +229,55 @@ function GameView(paper) {
 		view.draw();
 	}
 	
+	function updatePlayersView(data)
+	{
+		if(data.eventType == "deliverCard")
+		{
+			var activePlayer = data.gameState.activePlayer;
+			if(!activePlayer)
+				return;
+			for(var i = 0; i < self.playerViews.length; ++i)
+			{
+				if(self.playerViews[i].playerName == activePlayer.name)
+				{
+					self.playerViews[i].updateCardsView();
+				}
+				
+				// draw remain cards for each view at top
+				if(data.gameState.lastCards.length > 0)
+				{
+					var yOffset = self.margin + self.cardSize.height/2;
+					var x = (self.viewSize.width - self.cardSize.width*3 - self.margin*1.5)/2 + self.cardSize.width/2;
+					var y = yOffset;
+				
+					var lastCards = data.gameState.lastCards;
+					for(var i = 0; i < lastCards.length; ++i)
+					{
+						var cardObj = new paper.Raster(resImages[lastCards[i].id]);
+						cardObj.position = new Point(x + i*(self.cardSize.width+self.margin/2), y);
+						lastCardObjs.push(cardObj);
+					}
+					
+					if(activePlayer.isLord)
+					{
+						// end deliver card, lord is the first one to chupai
+						drawButtons();
+					}
+				}
+			}
+		}
+		else if(data.eventType == "chupai")
+		{
+			
+		}
+	}
+	
 	// PlayerView class to manage player's view initializaiton and update
 	function PlayerView(player, gameView)
 	{
 		this.player = player;
 		this.playerName = player.name;
-		this.cardObjects = [];		
+		this.cardObjects = [];
 		var gView = gameView;
 		// draw profile -
 		// name
@@ -317,7 +347,7 @@ function GameView(paper) {
 			var cards = this.player.cards;
 			for(var i = 0; i < cards.length; ++i)
 			{
-				drawCard(this, cards[i]);
+				drawCard(this, cards[i], i+1);
 			}
 		}
 		
@@ -328,7 +358,7 @@ function GameView(paper) {
 			this.updateCardsView();
 		}
 		
-		function drawCard(playerView, card)
+		function drawCard(playerView, card, index)
 		{
 			if(playerView.player == gView.sessionPlayer)
 			{
@@ -337,20 +367,21 @@ function GameView(paper) {
 				// always draw the last delived card
 				var cardRaster = new paper.Raster(resImages[card.id]);
 				cardRaster.name = card.id;
-				cardRaster.position = new Point(x+num*gView.offset, y);
+				cardRaster.position = new Point(x+index*gView.offset, y);
 				
 				playerView.cardObjects.push(cardRaster);
 			}
 			else
 			{
+				var cards = playerView.player.cards;
 				var leftSidePlayer = (playerView.player.name == gView.sessionPlayer.leftPlayer)
-				var totalH = (cards.length-1)*gView.offset + gView.cardH;
+				var totalH = (cards.length-1)*gView.offset + gView.cardSize.height;
 				var offset = gView.offset+gView.cardSize.width*2.5;
 				var x = leftSidePlayer ? offset : (gView.viewSize.width-offset);
 				var y = (gView.viewSize.height - totalH)/2;
 				var cardRaster = new paper.Raster(resImages['rear']);
 				cardRaster.name = 'rear'+i;
-				cardRaster.position = new Point(x, y+num*gView.offset);
+				cardRaster.position = new Point(x, y+index*gView.offset);
 				
 				playerView.cardObjects.push(cardRaster);
 			}
@@ -515,89 +546,7 @@ function GameView(paper) {
 			}
 		}
 	}
-	
-	// to be removed
-	function deliverCards()
-	{
-		if(deck.cards.length == 0) {			
-	
-			clearInterval(timerId);			
-			sort(self.sessionPlayer);
-			drawButtons();
-			return;
-		}
-		//console.log(deck.cards.toString());
-		var currentPlayerView;
-		for(var i = 0; i < self.playerViews.length; ++i)
-		{
-			if(currentPlayer.name == self.playerViews[i].playerName)
-			{
-				currentPlayerView = self.playerViews[i];
-				break;
-			}
-		}
-		
-		// deliver cards to each player		
-		var remainCards = 3;	
-		if(deck.cards.length == remainCards)
-		{
-			for(i = 0; i < remainCards; ++i)
-			{
-				// Assume the first player is the lord.				
-				if(currentPlayer.isLord) {
-					currentPlayer.cards.push(deck.cards[i]);
-					drawCard(currentPlayer, currentPlayerView, deck.cards[i]);
-				}
-			}		
-			
-			var yOffset = self.margin + self.cardSize.height/2;
-			var x = (self.viewSize.width - self.cardSize.width*3 - self.margin*1.5)/2 + self.cardSize.width/2;
-			var y = yOffset;
-		
-			// The last 3 cards should be visible for all players.
-			var rearImg = resImages['rear'];
-			var card1 = deck.cards[deck.cards.length-1];
-			var img1 = resImages[card1.id];
-			card = new paper.Raster(img1);
-			card.position = new Point(x, y);			
-			
-			var card2 = deck.cards[deck.cards.length-2];
-			var img2 = resImages[card2.id];
-			card = new paper.Raster(img2);
-			card.position = new Point(x+self.cardSize.width+self.margin/2, y);
-			
-			var card3 = deck.cards[deck.cards.length-3];
-			var img3 = resImages[card3.id];
-			card = new paper.Raster(img3);
-			card.position = new Point(x+2*(self.cardSize.width+self.margin/2), y);
-			
-			deck.cards.remove(deck.cards[0]);
-			deck.cards.remove(deck.cards[0]);
-			deck.cards.remove(deck.cards[0]);			
-		}
-		else
-		{
-			self.players[currentPlayer].cards.push(deck.cards[0]);
-			drawCard(currentPlayer, currentPlayerView, deck.cards[0]);
-			deck.cards.remove(deck.cards[0]);			
-		}
-		
-		var players = self.gameState.players;
-		for(var i = 0; i < players.length; ++i)
-		{
-			if(currentPlayer.rightPlayer == players[i].name)
-			{
-				currentPlayer = player[i];
-				break;
-			}
-		}
-		
-		if(deck.cards.length == 3)
-			currentPlayer = self.sessionPlayer;
-			
-		view.draw();
-	}
-	
+
 	function sort(player)
 	{
 		// it doesn't work

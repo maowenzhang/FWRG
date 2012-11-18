@@ -26,6 +26,8 @@ function Player(name) {
 	// The table/seat index that the player sits.
 	this.table = -1;
 	this.seat = -1;
+	this.leftPlayer = null;
+	this.rightPlayer = null;
 }
 
 // Player derives from User

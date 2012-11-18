@@ -9,12 +9,23 @@ function GameState(name) {
 	this.activePlayer = null;
 	this.deck = null;
 	this.started = false;
+	this.lastCards = [];
 	
 	this.getPlayer = function(name) {
 		for (var i=0; i<this.players.length; i++) {
 			if (this.players[i].name == name) {
 				return this.players[i];
 			}
+		}
+		return null;
+	}
+	
+	this.lordPlayer = function()
+	{
+		for(var i = 0; i < this.players.length; i++)
+		{
+			if(this.players[i].isLord)
+				return this.players[i];
 		}
 		return null;
 	}
@@ -34,6 +45,24 @@ function GameState(name) {
 		
 		var newplayer = userMgr.addPlayer(name);
 		console.log("create new player: " + newplayer);
+		
+		// automatically allocate seat for the new player
+		if(this.players.length == 1)
+		{
+			// first player sit at 0 seat
+			this.players[0].rightPlayer= newplayer.name;
+			newplayer.leftPlayer = this.players[0].name;
+		}
+		else if(this.players.length == 2)
+		{
+			// third player login in, sit last seat
+			newplayer.leftPlayer = this.players[1].name;
+			this.players[1].rightPlayer = newplayer.name;
+			
+			newplayer.rightPlayer = this.players[0].name;
+			this.players[0].leftPlayer = newplayer.name;			
+		}
+		
 		this.players.push(newplayer);
 	}
 	
