@@ -8,11 +8,14 @@
 	"mongodb" : ""
   },
   "devDependencies": {
+	"nodemon" : "latest"
   },
   "scripts": {
-    "start": "node src/server.js",
-	"debug": "node --debug src/server.js",
-	"debugex": "node --debug-brk src/server.js"
+    "start": "nodemon -w src src/server.js localhost 8080",
+	"start2": "node src/server.js",
+	"debug": "nodemon -w src --debug-brk src/server.js localhost 8080",
+	"debug2": "node --debug src/server.js",
+	"debug3": "node --debug-brk src/server.js"
   },
   "analyze": "false"
 }
