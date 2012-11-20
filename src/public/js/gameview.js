@@ -20,13 +20,13 @@ ImageLoader.prototype = {
 			self.content = new Image();
 			self.content.src = src; 
 			// onload event seems not be called automatically, call it directly
-			//self.content.onload = function(){
+			self.content.onload = function(){
 				console.log('image loaded');
 				if(self.oncomplete){
 					self.event.currentTarget = self.content;
 					self.oncomplete(self.event);
 				}
-			//};			
+			};			
 		}
 	}
 };
