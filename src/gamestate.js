@@ -109,14 +109,17 @@ function GameState(name) {
 		return true;
 	}
 	
-	this.endGame = function(datamgr, gameId) {
+	this.tryEndGame = function() {
 		if(!this.started)
 			return;
-		this.started = false;
-		// Any other things need to do?..
-		if(datamgr && this.players.length == 0) {
-			datamgr.removeGame(gameId);
+		if(this.players.length == 0) {
+			this.players = [];
+			this.activePlayer = null;
+			this.deck = null;
+			this.started = false;
+			this.lastCards = [];
 		}
+		// Any other things need to do?..
 	}
 }
 

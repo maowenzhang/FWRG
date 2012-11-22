@@ -129,7 +129,7 @@ io.on('connection', function (socket) {
             console.log("player: " + p1ayername + " left!");
             gs.removePlayer(p1ayername);
             //TODO: consider the observer's leave (since it won't affect the game progress.
-            gs.endGame(datamgr, gameId);
+			gs.tryEndGame();
         }
         else if (type == "selectSeat") {
             console.log(data.playerName + " selected the seat ( table: " + data.tableIndex + ", seat: " + data.seatIndex);
