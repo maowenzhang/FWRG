@@ -63,4 +63,5 @@ Array.prototype.remove = function(val) {
 // show the chat message
 function updateChatMsg(ctrlId, msg) {
     $('#' + ctrlId).val($('#' + ctrlId).val() + msg + "\n");
+    document.getElementById(ctrlId).scrollTop = document.getElementById(ctrlId).scrollHeight;
 }
