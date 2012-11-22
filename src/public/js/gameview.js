@@ -174,6 +174,8 @@ function GameView(paper) {
 	}
 
 	function cleanPlayers() {
+		if(!self.gameState)
+			return;
 		var players = self.gameState.players;
 		if(!players || players.length==0)
 			return;
@@ -206,7 +208,9 @@ function GameView(paper) {
 	
 	// Now this function just draw the players info without the cards.
 	function drawPlayers()
-	{	
+	{
+		if(!self.gameState)
+			return;
 		var sessionPlayer = self.sessionPlayer;
 		var players = self.gameState.players;
 		if(!players || !sessionPlayer)
@@ -219,7 +223,7 @@ function GameView(paper) {
 			var playerView = null;
 			for(var j = 0; j < self.playerViews.length; ++j)
 			{
-				if(player == self.playerViews[j].player)
+				if(player.name == self.playerViews[j].playerName)
 				{
 					playerView = self.playerViews[j];
 					break;
@@ -249,9 +253,14 @@ function GameView(paper) {
 				return;
 			for(var i = 0; i < self.playerViews.length; ++i)
 			{
-				if(self.playerViews[i].playerName == activePlayer.name)
+				var playerView = self.playerViews[i];
+				if(playerView.playerName == activePlayer.name)
 				{
-					self.playerViews[i].updateCardsView();
+					// update cards of the player in the view
+					playerView.player.cards = activePlayer.cards;
+					playerView.player.outcards = activePlayer.outcards;
+					// then do UI update..
+					playerView.updateCardsView();
 				}
 				
 				// draw remain cards for each view at top
@@ -266,7 +275,7 @@ function GameView(paper) {
 					{
 						var cardObj = new paper.Raster(resImages[lastCards[i].id]);
 						cardObj.position = new Point(x + i*(self.cardSize.width+self.margin/2), y);
-						lastCardObjs.push(cardObj);
+						self.lastCardObjs.push(cardObj);
 					}
 					
 					if(activePlayer.isLord)
@@ -371,7 +380,7 @@ function GameView(paper) {
 		
 		function drawCard(playerView, card, index)
 		{
-			if(playerView.player == gView.sessionPlayer)
+			if(playerView.playerName == gView.sessionPlayer.name)
 			{
 				var x = gView.myPositionInfo.center.x; 
 				var y = gView.myPositionInfo.center.y;

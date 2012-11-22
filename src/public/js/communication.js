@@ -32,6 +32,7 @@ function GameSession() {
 }
 var gameSession = new GameSession();
 var curPlayerName = getCurUser().name;
+gameSession.sessionPlayerName = curPlayerName;
 
 // Connected to server
 socket.on('connect', function () {
