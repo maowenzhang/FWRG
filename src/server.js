@@ -69,7 +69,8 @@ io.on('connection', function (socket) {
         console.log("/n=============== updateFromClient, type: " + type);
         console.log("Received data: ", data);
 
-        var gs = datamgr.getGameState("firstGame");
+		var gameId = "firstGame";
+        var gs = datamgr.getGameState(gameId);
         var p1ayername = data.playerName;
         var gameTable, player;
 
@@ -88,6 +89,7 @@ io.on('connection', function (socket) {
                 var remainCards = 3;
                 var curPlayer = 0;
                 var cards = gs.deck.cards;
+				var eventdata;
                 while (cards.length > 0) {
                     console.log(curPlayer);
                     player = gs.getPlayerByIndex(curPlayer++);
@@ -113,18 +115,21 @@ io.on('connection', function (socket) {
                     }
 
 					gs.activePlayer = player;
-                    var eventdata = new EventData("deliverCard", gs);
+                    eventdata = new EventData("deliverCard", gs);
                     updateFromServerToClients(socket, eventdata);
 
                     if (curPlayer > 2) curPlayer = 0;
                 }
+				
+				eventdata = new EventData("endDeliverCards", gs);
+				updateFromServerToClients(socket, eventdata);
             }
         }
         else if (type == "end") {
             console.log("player: " + p1ayername + " left!");
             gs.removePlayer(p1ayername);
             //TODO: consider the observer's leave (since it won't affect the game progress.
-            gs.endGame();
+            gs.endGame(datamgr, gameId);
         }
         else if (type == "selectSeat") {
             console.log(data.playerName + " selected the seat ( table: " + data.tableIndex + ", seat: " + data.seatIndex);

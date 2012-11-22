@@ -109,11 +109,14 @@ function GameState(name) {
 		return true;
 	}
 	
-	this.endGame = function() {
+	this.endGame = function(datamgr, gameId) {
 		if(!this.started)
 			return;
 		this.started = false;
 		// Any other things need to do?..
+		if(datamgr && this.players.length == 0) {
+			datamgr.removeGame(gameId);
+		}
 	}
 }
 
@@ -145,6 +148,15 @@ function GameStateManager() {
 		this.states.push(gs);
 		return gs;
 	};
+	
+	this.removeGame = function(name) {
+		for (var i=0; i<this.states.length; i++){
+			if (this.states[i].name == name){
+				console.log("remove the game: " + name);
+				this.states.splice(0, 1);
+			}
+		}
+	}
 }
 
 module.exports = new GameStateManager();
