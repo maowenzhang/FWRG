@@ -18,7 +18,6 @@ ImageLoader.prototype = {
 		self.loadtype = loadtype;
 		if(self.loadtype == "image"){
 			self.content = new Image();
-			self.content.src = src; 
 			// onload event seems not be called automatically, call it directly
 			self.content.onload = function(){
 				console.log('image loaded');
@@ -26,7 +25,8 @@ ImageLoader.prototype = {
 					self.event.currentTarget = self.content;
 					self.oncomplete(self.event);
 				}
-			};			
+			};	
+			self.content.src = src; 
 		}
 	}
 };
@@ -104,9 +104,13 @@ function loadImageResources(gameView){
 		function(result){
 			// store the all image results
 			resImages = result;			
-
+			
+			self.gameView.resourcesReady = true;
 			// now init the game view..
 			self.gameView.init();
+			
+			self.gameView.update();
+			
 		}
 	);
 }
@@ -138,6 +142,7 @@ function GameView(paper) {
 	this.playerViews = [];
 	
 	this.lastCardObjs = []; // record dipai
+	this.resourcesReady = false;
 	
 	var self = this;
 
@@ -155,11 +160,17 @@ function GameView(paper) {
 	}
 
 	this.update = function(data) {
-		this.gameState = data.gameState;
-		this.sessionPlayer = data.sessionPlayer;
+		if(data) {
+			this.gameState = data.gameState;
+			this.sessionPlayer = data.sessionPlayer;
+		}
+		if(!this.resourcesReady)
+			return;
 		cleanPlayers();
 		drawPlayers();
-		updatePlayersView(data);
+		if(data) {
+			updatePlayersView(data);
+		}
 	}
 
 	function cleanPlayers() {
