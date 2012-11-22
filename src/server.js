@@ -64,6 +64,14 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('chatMsg', ctrlId, msg);
     });
 
+	socket.on('playCards', function (playerName, cards) {
+		// send to other players for the cards info
+		if(socket.playerName && socket.playerName != playerName) {
+			console.log('Player ' + playerName + ' played ' + cards.length + ' cards');
+			socket.broadcast.emit('playCards', playerName, cards);
+		}
+	});
+	
     // Getting updates from clients
     socket.on('updateFromClient', function (type, data) {
         console.log("/n=============== updateFromClient, type: " + type);
@@ -76,6 +84,7 @@ io.on('connection', function (socket) {
 
         if (type == "login") {
             console.log("player: " + p1ayername + " joined!");
+			socket.playerName = p1ayername;
             // add new player
             gs.addPlayer(p1ayername);
         }
@@ -123,6 +132,11 @@ io.on('connection', function (socket) {
 				
 				eventdata = new EventData("endDeliverCards", gs);
 				updateFromServerToClients(socket, eventdata);
+
+				var lord = gs.lordPlayer();
+				if(lord) {
+					console.log("Lord is " + lord.name);
+				}
             }
         }
         else if (type == "end") {
