@@ -237,13 +237,14 @@ function GameView(paper) {
 			}
 			else
 			{
-				// update view if necessary
+				//important update view if necessary
+				playerView.player = player;
 			}
 		}
 		
 		view.draw();
-	}
-	
+	}	
+
 	function updatePlayersView(data)
 	{
 		if(data.eventType == "deliverCard")
@@ -254,6 +255,7 @@ function GameView(paper) {
 			for(var i = 0; i < self.playerViews.length; ++i)
 			{
 				var playerView = self.playerViews[i];
+				playerView.translateCards();
 				if(playerView.playerName == activePlayer.name)
 				{
 					// update cards of the player in the view
@@ -264,7 +266,7 @@ function GameView(paper) {
 				}
 				
 				// draw remain cards for each view at top
-				if(data.gameState.lastCards.length > 0)
+				if(data.gameState.lastCards.length > 0 && self.lastCardObjs.length == 0)
 				{
 					var yOffset = self.margin + self.cardSize.height/2;
 					var x = (self.viewSize.width - self.cardSize.width*3 - self.margin*1.5)/2 + self.cardSize.width/2;
@@ -278,11 +280,13 @@ function GameView(paper) {
 						self.lastCardObjs.push(cardObj);
 					}
 					
-					if(activePlayer.isLord)
-					{
-						// end deliver card, lord is the first one to chupai
-						drawButtons();
-					}
+					playerView.sortCards();
+				}
+				
+				if(playerView.player.isLord)
+				{
+					// end deliver card, lord is the first one to chupai
+					drawButtons();
 				}
 			}
 		}
@@ -371,10 +375,40 @@ function GameView(paper) {
 			}
 		}
 		
+		this.translateCards = function()
+		{
+			var clientCards = [];
+			// translate server cards to client cards
+			for(var i = 0; i < this.player.cards.length; ++i)
+			{
+				var serverCard = this.player.cards[i];
+				var rank;
+				var suit;
+				Card.Rank.foreach(function (r){
+						if(r.name == serverCard.rank)
+						{
+						rank = r;
+						}
+				});
+				Card.Suit.foreach(function (s){
+					if(s.name = serverCard.suit)
+					{
+						suit = s;
+					}
+				});
+				var clientCard = new Card(suit, rank);
+				clientCards.push(clientCard);
+			}
+			
+			this.player.cards.splice(0, this.player.cards.length);
+			this.player.cards = clientCards;
+		}
+		
 		// after deliver cards, call this functio to sort
 		this.sortCards = function()
 		{
 			this.player.cards.sort(Card.orderByRank);
+			
 			this.updateCardsView();
 		}
 		
@@ -541,7 +575,7 @@ function GameView(paper) {
 						return;
 					if(hitObject.name == "chupai")
 					{
-						takeCardsOut(this.sessionPlayer);		
+						takeCardsOut(this.sessionPlayer);
 					}
 					else
 					{
