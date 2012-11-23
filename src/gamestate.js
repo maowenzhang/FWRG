@@ -10,6 +10,7 @@ function GameState(name) {
 	this.deck = null;
 	this.started = false;
 	this.lastCards = [];
+	this.outCards = [];
 	
 	this.getPlayer = function(name) {
 		for (var i=0; i<this.players.length; i++) {

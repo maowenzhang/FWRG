@@ -155,6 +155,13 @@ io.on('connection', function (socket) {
                 player.seat = data.seatIndex;
             }
         }
+		else if(type == "playCards")
+		{
+			var cards = data.cards;
+			player = gs.getPlayer(playername);
+			gs.activePlayer = gs.getPlayer(player.rightPlayer);
+			ga.outCards = cards;
+		}
 
         var eventdata = new EventData(type, gs);
         updateFromServerToClients(socket, eventdata);

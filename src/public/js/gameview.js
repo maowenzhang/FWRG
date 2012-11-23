@@ -279,14 +279,25 @@ function GameView(paper) {
 						cardObj.position = new Point(x + i*(self.cardSize.width+self.margin/2), y);
 						self.lastCardObjs.push(cardObj);
 					}
-					
-					playerView.sortCards();
-				}
-				
-				if(playerView.player.isLord)
+				}				
+			}
+		}
+		else if(data.eventType == "endDeliverCards")
+		{
+			for(var i = 0; i < self.playerViews.length; ++i)
+			{
+				var playerView = self.playerViews[i];
+				if(self.sessionPlayer.name == playerView.playerName)
 				{
-					// end deliver card, lord is the first one to chupai
-					drawButtons();
+					playerView.translateCards();
+					playerView.sortCards();
+					self.sessionPlayer = playerView.player;
+					
+					if(playerView.player.isLord)
+					{
+						// end deliver card, lord is the first one to chupai
+						drawButtons();
+					}
 				}
 			}
 		}
@@ -294,6 +305,35 @@ function GameView(paper) {
 		{
 			
 		}
+	}
+	
+	function transServerCards(cards)
+	{
+		var clientCards = [];
+		// translate server cards to client cards
+		for(var i = 0; i < cards.length; ++i)
+		{
+			var serverCard = cards[i];
+			var rank;
+			var suit;
+			Card.Rank.foreach(function (r){
+					if(r.name == serverCard.rank || r.name == serverCard.rank.name)
+					{
+					rank = r;
+					}
+			});
+			Card.Suit.foreach(function (s){
+				if(s.name == serverCard.suit|| s.name == serverCard.suit.name)
+				{
+					suit = s;
+				}
+			});
+			var clientCard = new Card(suit, rank);
+			clientCard.selected = serverCard.selected;
+			clientCards.push(clientCard);
+		}
+		
+		return clientCards;
 	}
 	
 	// PlayerView class to manage player's view initializaiton and update
@@ -354,11 +394,15 @@ function GameView(paper) {
 			};
 
 			// draw a avartar to represent the lord if the play is lord.
-			if(this.player.isLord) {
-				this.lordObject = drawLordFlag(avatarPos, refVec);
-			}
+			this.drawLordFlag();
 			this.avatarObject = avatar;
 			this.nameObject = playerName;
+		}
+		
+		this.drawLordFlag()
+		{
+			if(this.player.isLord && !this.lordObject)
+				this.lordObject = drawLordFlag(avatarPos, refVec);
 		}
 		
 		// call this function to draw view when deliver card to this player or chupai
@@ -367,7 +411,7 @@ function GameView(paper) {
 			if(!this.player)
 				return;
 			clearCards(this.cardObjects);
-			
+			drawLordFlag();
 			var cards = this.player.cards;
 			for(var i = 0; i < cards.length; ++i)
 			{
@@ -377,29 +421,7 @@ function GameView(paper) {
 		
 		this.translateCards = function()
 		{
-			var clientCards = [];
-			// translate server cards to client cards
-			for(var i = 0; i < this.player.cards.length; ++i)
-			{
-				var serverCard = this.player.cards[i];
-				var rank;
-				var suit;
-				Card.Rank.foreach(function (r){
-						if(r.name == serverCard.rank)
-						{
-						rank = r;
-						}
-				});
-				Card.Suit.foreach(function (s){
-					if(s.name = serverCard.suit)
-					{
-						suit = s;
-					}
-				});
-				var clientCard = new Card(suit, rank);
-				clientCards.push(clientCard);
-			}
-			
+			var clientCards = transServerCards(this.player.cards);
 			this.player.cards.splice(0, this.player.cards.length);
 			this.player.cards = clientCards;
 		}
@@ -471,10 +493,7 @@ function GameView(paper) {
 			if(!this.lordObject)
 				this.lordObject.remove();
 		}
-	}	
-	
-	var currentPlayer = 0;
-	var timerId;
+	}
 
 	this._calcMyPositionInfo = function(numCards) {
 		var totalW = (numCards-1)*this.offset + this.cardSize.width;
@@ -486,7 +505,6 @@ function GameView(paper) {
 		};
 	}
 
-	var waitPlayerTimerId;
 	this.init = function()
 	{
 		// get the dimension of the card
@@ -600,29 +618,26 @@ function GameView(paper) {
 			}
 		}
 	}
-
-	function sort(player)
-	{
-		// it doesn't work
-		player.cards.sort(Card.orderByRank);
-		for(var i = 0; i < self.playerViews.length; ++i)
-		{
-			if(player.name == self.playerViews[i].playerName)
-			{
-				var playerView = self.playerViews[i];
-				for(var j = 0; j < playerView.cardObjects.length; ++j)
-				{
-					playerView.cardObjects[j].remove();
-				}
-				playerView.cardObjects.splice(0, player.cardObjects.length);
-				drawCards(player, playerView);
-			}
-		}
-	}
 	
 	function takeCardsOut(player)
 	{
-		var selectedCards = getSelectedCards(player);
+		var playerView;
+		for(var i = 0; i < self.playerViews.length; i++)
+		{
+			if(self.playerViews[i].playerName == player.name)
+			{
+				playerView = self.playerViews[i];
+				if(playerView.player.cards.length > 0 && !playerView.player.cards[0].compareTo)
+				{
+					var cards = transServerCards(playerView.player.cards);
+					playerView.player.cards.splice(0, playerView.player.cards.length);
+					playerView.player.cards = cards;
+				}
+				
+				break;
+			}
+		}
+		var selectedCards = getSelectedCards(playerView.player);
         var suitpattern = (new SuitPattern(selectedCards));
         if (!suitpattern.IsValid())
             return;
@@ -645,19 +660,17 @@ function GameView(paper) {
 			
 			for(var i = 0; i < selectedCards.length; ++i)
 			{
-				var card = selectedCards[i];
-				id = getCardImgId(card.suit.value, card.rank.value);
-				var outCard = new paper.Raster(document.getElementById(id));
+				var card = selectedCards[i];				
+				var outCard = new paper.Raster(resImages[card.id]);
 				outCard.position = new Point(startW + i*self.offset, startH);
-				lastOutCards.push(outCard);	
+				lastOutCards.push(outCard);
 				
 				// remove the card from the player
-				player.cards.remove(card);
+				playerView.player.cards.remove(card);
 			}
 			
-			updatePlayerView(player);
-			
-			view.draw();
+			playerView.sortCards();
+			playerView.updateCardsView();
 		}
 	}
 
