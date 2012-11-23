@@ -455,6 +455,7 @@ function GameView(paper) {
 					outCard.position = new Point(startW + i*gView.offset, startH);
 					this.outCardObjs.push(outCard);
 				}
+				view.draw();
 			}
 			
 			if(this.isActive() && this.isSessionView())
@@ -482,8 +483,9 @@ function GameView(paper) {
 					{
 						var clientOutCards = transServerCards(outCards);
 						var lastSuitpattern = (new SuitPattern(clientOutCards));
+						var validPattern = suitpattern.IsLargerThan(lastSuitpattern);
 						// check if it's good to play
-						if(!suitpattern.IsLargerThan(lastSuitpattern))
+						if(validPattern <= 0)
 							return;
 					}
 					
