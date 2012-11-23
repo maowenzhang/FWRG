@@ -296,14 +296,22 @@ function GameView(paper) {
 					if(playerView.player.isLord)
 					{
 						// end deliver card, lord is the first one to chupai
-						drawButtons();
+						playerView.drawButtons();
 					}
 				}
 			}
 		}
-		else if(data.eventType == "chupai")
+		else if(data.eventType == "playCards")
 		{
-			
+			for(var i = 0; i < self.playerViews.length; ++i)
+			{
+				var playerView = self.playerViews[i];
+				playerView.updatePlayerView(data.gameState.outCards);
+				if(self.sessionPlayer.name == playerView.playerName)
+				{
+					self.sessionPlayer = playerView.player;
+				}
+			}
 		}
 	}
 	
@@ -345,6 +353,8 @@ function GameView(paper) {
 		var gView = gameView;
 		this.avatarObject = {};
 		this.refVec = {};
+		this.btnObjects = [];
+		this.outCardObjs = [];
 		// draw profile -
 		// name
 		// profile
@@ -413,13 +423,123 @@ function GameView(paper) {
 		{
 			if(!this.player)
 				return;
-			clearCards(this.cardObjects);
+			clearRasterCards(this.cardObjects);
 			this.drawLordFlag();
 			var cards = this.player.cards;
 			for(var i = 0; i < cards.length; ++i)
 			{
 				drawCard(this, cards[i], i+1);
 			}
+		}
+		
+		// this function is used for play cards
+		this.updatePlayerView = function(outCards)
+		{
+			var clientOutCards = transServerCards(outCards);			
+			// clear last object
+			clearRasterCards(this.outCardObjs);
+			
+			// draw the cards at the center of the gameview			
+			if(clientOutCards.length > 0)
+			{
+				// calculate the position of the out cards, it must be in the center of the view
+				var center = gView.center;
+				var totalLength = gView.cardSize.width + gView.offset * clientOutCards.length;
+				var startW = center.x - totalLength / 2 + gView.cardSize.width / 2;
+				var startH = center.y;
+				
+				for(var i = 0; i < clientOutCards.length; ++i)
+				{
+					var card = clientOutCards[i];
+					var outCard = new paper.Raster(resImages[card.id]);
+					outCard.position = new Point(startW + i*gView.offset, startH);
+					this.outCardObjs.push(outCard);
+				}
+			}
+			
+			if(this.isActive() && this.isSessionView())
+			{
+				// it's the player, draw the buttons
+				this.drawButtons();
+			}
+		}
+		
+		this.takeCardsOut = function()
+		{
+			// only allow the active player to play cards
+			if(this.isActive())
+			{
+				this.translateCards();
+				var selectedCards = this.selectedCards();
+				if(selectedCards.length > 0)
+				{
+					var suitpattern = (new SuitPattern(selectedCards));
+					if (!suitpattern.IsValid())
+						return;
+					// if it's larger than the last play cards
+					var outCards = gView.gameState.outCards;
+					if(outCards.length > 0)
+					{
+						var clientOutCards = transServerCards(outCards);
+						var lastSuitpattern = (new SuitPattern(clientOutCards));
+						// check if it's good to play
+						if(!suitpattern.IsLargerThan(lastSuitpattern))
+							return;
+					}
+					
+					for(var i = 0; i < selectedCards.length; ++i)
+					{
+						this.player.cards.remove(selectedCards[i]);
+					}
+						
+					// find a good one, play it
+					gView.gameState.activePlayer = {}; // reset it
+					this.updatePlayerView(selectedCards);
+					this.sortCards();
+					this.updateCardsView();
+					this.clearButtons();
+					
+					// Send the signal to server
+					sendPlayedCards(this.player.name, selectedCards);
+				}
+			}
+		}
+		
+		this.pass = function()
+		{
+			if(this.isActive())
+			{
+				// Send the signal to server
+				this.clearButtons();
+				var clientOutCards = transServerCards(gView.gameState.outCards);
+				sendPlayedCards(this.player.name, clientOutCards);
+			}
+		}
+		
+		this.tip = function()
+		{
+			//
+		}
+		
+		this.isActive = function()
+		{
+			return this.player.name == gView.gameState.activePlayer.name;				
+		}
+		
+		this.isSessionView = function()
+		{
+			return this.player.name == gView.sessionPlayer.name;
+		}
+		
+		this.selectedCards = function()
+		{
+			var selectedCards = [];
+			for (var i = 0; i < this.player.cards.length; i++) {
+				var card = this.player.cards[i];
+				if (card.selected)
+					selectedCards.push(card);
+			}
+			return selectedCards;
 		}
 		
 		this.translateCards = function()
@@ -432,14 +552,43 @@ function GameView(paper) {
 		// after deliver cards, call this functio to sort
 		this.sortCards = function()
 		{
-			this.player.cards.sort(Card.orderByRank);
-			
+			this.player.cards.sort(Card.orderByRank);			
 			this.updateCardsView();
+		}
+		
+		this.drawButtons = function()
+		{
+			if(this.player.name == gView.gameState.activePlayer.name)
+			{
+				var buttons = ['chupai', 'buchu', 'tishi'];
+				var btnImg = resImages[buttons[0]];
+				var totalW = btnImg.width*3 + 2*gView.offset;
+				var x = (gView.viewSize.width - totalW)/2 + btnImg.width/2;
+				var y = gView.viewSize.height - gView.cardSize.height - 3*gView.offset;
+				
+				var btn;
+				for(var i = 0; i < buttons.length; ++i)
+				{
+					var x1 = x + i * btnImg.width + i * gView.offset;
+					var image = resImages[buttons[i]];
+					btn = new paper.Raster(image);
+					btn.position = new Point(x1, y);
+					btn.name = buttons[i];
+					this.btnObjects.push(btn);
+				}
+				view.draw();
+			}
+		}
+		this.clearButtons = function()
+		{
+			for(var i = 0; i < this.btnObjects.length; ++i)
+				this.btnObjects[i].remove();
+			this.btnObjects.splice(0, this.btnObjects.length);
 		}
 		
 		function drawCard(playerView, card, index)
 		{
-			if(playerView.playerName == gView.sessionPlayer.name)
+			if(playerView.isSessionView())
 			{
 				var x = gView.myPositionInfo.center.x; 
 				var y = gView.myPositionInfo.center.y;
@@ -475,20 +624,22 @@ function GameView(paper) {
 		}
 		
 		// private function
-		function clearCards(cardObjects)
+		function clearRasterCards(rasterObjects)
 		{
-			for(var i = 0; i < cardObjects.length; ++i)
+			for(var i = 0; i < rasterObjects.length; ++i)
 			{
-				cardObjects[i].remove();
+				rasterObjects[i].remove();
 			}
-			cardObjects.splice(0, cardObjects.length);
+			rasterObjects.splice(0, rasterObjects.length);
 		}
 		
 		this.clear = function()
 		{
 			if(!this.player)
 				return;
-			clearCards(this.cardObjects);
+			clearRasterCards(this.cardObjects);
+			clearRasterCards(this.outCardObjs);
+			clearRasterCards(this.btnObjects);
 			if(!this.avatarObject)
 				this.avatarObject.remove();
 			if(!this.nameObject)
@@ -570,18 +721,7 @@ function GameView(paper) {
 		}
 		return null;
 	}
-	
-	function getSelectedCards(player)
-	{
-		var selectedCards = [];
-		for (var i = 0; i < player.cards.length; i++) {
-			var card = player.cards[i];
-			if (card.selected)
-				selectedCards.push(card);
-		}
-		return selectedCards;
-	}
-	
+		
 	var lastOutCards = [];
 	
 	this.handleMouseDownEvent = function(hitObject)
@@ -596,19 +736,39 @@ function GameView(paper) {
 						return;
 					if(hitObject.name == "chupai")
 					{
-						takeCardsOut(this.sessionPlayer);
+						handleCardsOutEvent(this.sessionPlayer);
+					}
+					else if(hitObject.name == "buchu")
+					{
+						for(var i = 0; i < self.playerViews.length; i++)
+						{
+							if(self.playerViews[i].playerName == this.sessionPlayer.name)
+							{
+								self.playerViews[i].pass();
+							}
+						}
+					}
+					else if(hitObject.name == "tishi")
+					{
+						
 					}
 					else
 					{
 						// active player
-						var card = findCard(this.sessionPlayer.cards, hitObject.name);
-						if(card) {
-							if(card.selected) {
-								hitObject.position.y = hitObject.position.y + this.offset;
-								card.selected = false;
-							} else {
-								hitObject.position.y = hitObject.position.y - this.offset;
-								card.selected = true;
+						for(var i = 0; i < self.playerViews.length; i++)
+						{
+							if(self.playerViews[i].isSessionView() && self.playerViews[i].isActive())
+							{
+								var card = findCard(self.playerViews[i].player.cards, hitObject.name);
+								if(card) {
+									if(card.selected) {
+										hitObject.position.y = hitObject.position.y + this.offset;
+										card.selected = false;
+									} else {
+										hitObject.position.y = hitObject.position.y - this.offset;
+										card.selected = true;
+									}
+								}
 							}
 						}
 					}
@@ -622,80 +782,16 @@ function GameView(paper) {
 		}
 	}
 	
-	function takeCardsOut(player)
+	function handleCardsOutEvent(player)
 	{
-		var playerView;
 		for(var i = 0; i < self.playerViews.length; i++)
 		{
 			if(self.playerViews[i].playerName == player.name)
 			{
-				playerView = self.playerViews[i];
-				if(playerView.player.cards.length > 0 && !playerView.player.cards[0].compareTo)
-				{
-					var cards = transServerCards(playerView.player.cards);
-					playerView.player.cards.splice(0, playerView.player.cards.length);
-					playerView.player.cards = cards;
-				}
-				
-				break;
+				self.playerViews[i].takeCardsOut();
 			}
-		}
-		var selectedCards = getSelectedCards(playerView.player);
-        var suitpattern = (new SuitPattern(selectedCards));
-        if (!suitpattern.IsValid())
-            return;
-
-		if(selectedCards.length > 0)
-		{
-			while(lastOutCards.length > 0)
-			{
-				// clear last out cards
-				var outCard = lastOutCards[0];
-				lastOutCards.remove(outCard);
-				outCard.remove();
-			}
-			
-			// calculate the position of the out cards, it must be in the center of the view
-			var center = view.center;
-			var totalLength = self.cardSize.width + self.offset * selectedCards.length;
-			var startW = center.x - totalLength / 2 + self.cardSize.width / 2;
-			var startH = center.y;
-			
-			for(var i = 0; i < selectedCards.length; ++i)
-			{
-				var card = selectedCards[i];				
-				var outCard = new paper.Raster(resImages[card.id]);
-				outCard.position = new Point(startW + i*self.offset, startH);
-				lastOutCards.push(outCard);
-				
-				// remove the card from the player
-				playerView.player.cards.remove(card);
-			}
-			
-			playerView.sortCards();
-			playerView.updateCardsView();
-			
-			// Send the signal to server
-			sendPlayedCards(player.name, selectedCards);
 		}
 	}
 
-	function drawButtons() {
-		var buttons = ['chupai', 'buchu', 'tishi'];
-		var btnImg = resImages[buttons[0]];
-		var totalW = btnImg.width*3 + 2*self.offset;
-		var x = (self.viewSize.width - totalW)/2 + btnImg.width/2;
-		var y = self.viewSize.height - self.cardSize.height - 3*self.offset;
-		
-		var btn;
-		for(var i = 0; i < buttons.length; ++i)
-		{
-			var x1 = x + i * btnImg.width + i * self.offset;
-			var image = resImages[buttons[i]];
-			btn = new paper.Raster(image);
-			btn.position = new Point(x1, y);
-			btn.name = buttons[i];
-		}
-		view.draw();
-	}
+	
 }
