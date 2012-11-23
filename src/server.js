@@ -155,6 +155,11 @@ io.on('connection', function (socket) {
 			gs.outCards = cards;
 			console.log('play cards by ' + playerName);
 		}
+		else if (type == "StartNewGame") {
+			// TODO: reset the game state by the game state name
+			var gsName = data;
+			gs.restartGame();
+		}
 
         var eventdata = new EventData(type, gs);
         updateFromServerToClients(socket, eventdata);

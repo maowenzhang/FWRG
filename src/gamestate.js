@@ -120,8 +120,23 @@ function GameState(name) {
 			this.deck = null;
 			this.started = false;
 			this.lastCards = [];
+			this.outCards = [];
 		}
 		// Any other things need to do?..
+	}
+	this.restartGame = function() {
+		if(!this.started)
+			return;
+		this.activePlayer = null;
+		this.deck = null;
+		this.started = false;
+		this.lastCards = [];
+		this.outCards = [];
+		for(var i = 0; i < this.players.length; ++i) {
+			var player = this.players[i];
+			player.cards = [];
+			player.isLord = false;
+		}
 	}
 }
 

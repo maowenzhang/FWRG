@@ -119,6 +119,10 @@ function sendPlayedCards(playerName, cards) {
 	socket.emit("updateFromClient", "playCards", data);
 }
 
+function startNewGame(gsName) {
+	socket.emit("updateFromClient", "StartNewGame", gsName);
+}
+
 function sendChatMsg(ctrlId, msg) {
     socket.emit("chatMsg", ctrlId, msg);
 }
