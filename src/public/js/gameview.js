@@ -414,7 +414,7 @@ function GameView(paper) {
 		
 		this.drawLordFlag = function()
 		{
-			if(this.player.isLord && !this.lordObject && !this.avatarObject)
+			if(this.player.isLord && !this.lordObject && this.avatarObject)
 				this.lordObject = _drawLordFlag(this.avatarObject.position, this.refVec);
 		}
 		
