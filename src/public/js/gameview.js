@@ -674,6 +674,9 @@ function GameView(paper) {
 			
 			playerView.sortCards();
 			playerView.updateCardsView();
+			
+			// Send the signal to server
+			sendPlayedCards(player.name, selectedCards);
 		}
 	}
 

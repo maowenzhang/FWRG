@@ -64,14 +64,6 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('chatMsg', ctrlId, msg);
     });
 
-	socket.on('playCards', function (playerName, cards) {
-		// send to other players for the cards info
-		if(socket.playerName && socket.playerName != playerName) {
-			console.log('Player ' + playerName + ' played ' + cards.length + ' cards');
-			socket.broadcast.emit('playCards', playerName, cards);
-		}
-	});
-	
     // Getting updates from clients
     socket.on('updateFromClient', function (type, data) {
         console.log("/n=============== updateFromClient, type: " + type);
@@ -79,18 +71,19 @@ io.on('connection', function (socket) {
 
 		var gameId = "firstGame";
         var gs = datamgr.getGameState(gameId);
-        var p1ayername = data.playerName;
+        var playerName = data.playerName;
         var gameTable, player;
 
         if (type == "login") {
-            console.log("player: " + p1ayername + " joined!");
-			socket.playerName = p1ayername;
+            console.log("player: " + playerName + " joined!");
+			socket.playerName = playerName;
             // add new player
-            gs.addPlayer(p1ayername);
+            if(!gs.addPlayer(playerName))
+				return; // player has logged in.
         }
         else if (type == "userReady") {
-            console.log("player: " + p1ayername + " is ready!");
-            var p1 = gs.getPlayer(p1ayername);
+            console.log("player: " + playerName + " is ready!");
+            var p1 = gs.getPlayer(playerName);
             p1.isReady = true;
             // try to start the game and deliver cards..
             if (gs.tryStartGame()) {
@@ -129,25 +122,24 @@ io.on('connection', function (socket) {
 
                     if (curPlayer > 2) curPlayer = 0;
                 }
-				
+
+				// The lord will be the first active player. He will start the first round.
+				gs.activePlayer = gs.lordPlayer();
+				// Let client know we have finished the cards deliver.
 				eventdata = new EventData("endDeliverCards", gs);
 				updateFromServerToClients(socket, eventdata);
-
-				var lord = gs.lordPlayer();
-				if(lord) {
-					console.log("Lord is " + lord.name);
-				}
             }
+			return;
         }
         else if (type == "end") {
-            console.log("player: " + p1ayername + " left!");
-            gs.removePlayer(p1ayername);
+            console.log("player: " + playerName + " left!");
+            gs.removePlayer(playerName);
             //TODO: consider the observer's leave (since it won't affect the game progress.
 			gs.tryEndGame();
         }
         else if (type == "selectSeat") {
             console.log(data.playerName + " selected the seat ( table: " + data.tableIndex + ", seat: " + data.seatIndex);
-            player = gs.getPlayer(p1ayername);
+            player = gs.getPlayer(playerName);
             if (!player) {
                 console.log('ERROR: invalid player ' + data.playerName);
             } else {
@@ -158,9 +150,10 @@ io.on('connection', function (socket) {
 		else if(type == "playCards")
 		{
 			var cards = data.cards;
-			player = gs.getPlayer(playername);
+			player = gs.getPlayer(playerName);
 			gs.activePlayer = gs.getPlayer(player.rightPlayer);
-			ga.outCards = cards;
+			gs.outCards = cards;
+			console.log('play cards by ' + playerName);
 		}
 
         var eventdata = new EventData(type, gs);

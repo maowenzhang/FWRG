@@ -114,9 +114,9 @@ function selectSeat(playername, tableIdx, seatIdx) {
 
 function sendPlayedCards(playerName, cards) {
 	var data = {};
-	data.playerName = data;
+	data.playerName = playerName;
 	data.cards = cards;
-	socket.emit("playCards", "playCards", data);
+	socket.emit("updateFromClient", "playCards", data);
 }
 
 function sendChatMsg(ctrlId, msg) {

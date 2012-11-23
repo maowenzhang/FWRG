@@ -41,7 +41,7 @@ function GameState(name) {
 		console.log("add player");
 		if (this.getPlayer(name)) {
 			console.log("already has player: " + name);
-			return true;
+			return false;
 		}
 		
 		var newplayer = userMgr.addPlayer(name);
@@ -65,6 +65,7 @@ function GameState(name) {
 		}
 		
 		this.players.push(newplayer);
+		return true;
 	}
 	
 	this.removePlayer = function(name) {
