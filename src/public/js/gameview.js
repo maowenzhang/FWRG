@@ -343,6 +343,8 @@ function GameView(paper) {
 		this.playerName = player.name;
 		this.cardObjects = [];
 		var gView = gameView;
+		this.avatarObject = {};
+		this.refVec = {};
 		// draw profile -
 		// name
 		// profile
@@ -396,13 +398,14 @@ function GameView(paper) {
 			// draw a avartar to represent the lord if the play is lord.
 			this.drawLordFlag();
 			this.avatarObject = avatar;
+			this.refVec = refVec;
 			this.nameObject = playerName;
 		}
 		
-		this.drawLordFlag()
+		this.drawLordFlag = function()
 		{
-			if(this.player.isLord && !this.lordObject)
-				this.lordObject = drawLordFlag(avatarPos, refVec);
+			if(this.player.isLord && !this.lordObject && !this.avatarObject)
+				this.lordObject = _drawLordFlag(this.avatarObject.position, this.refVec);
 		}
 		
 		// call this function to draw view when deliver card to this player or chupai
@@ -411,7 +414,7 @@ function GameView(paper) {
 			if(!this.player)
 				return;
 			clearCards(this.cardObjects);
-			drawLordFlag();
+			this.drawLordFlag();
 			var cards = this.player.cards;
 			for(var i = 0; i < cards.length; ++i)
 			{
@@ -463,7 +466,7 @@ function GameView(paper) {
 			}
 		}
 		
-		function drawLordFlag(avatarPos, refVec) {
+		function _drawLordFlag(avatarPos, refVec) {
 			var lordImg = resImages['Lord'];
 			refVec = refVec.normalize(40+lordImg.height);
 			var lord = new paper.Raster(lordImg);
