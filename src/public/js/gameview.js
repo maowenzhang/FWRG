@@ -369,7 +369,7 @@ function GameView(paper) {
 			var avatarImg = resImages[this.player.avatar];
 			var avatar = new paper.Raster(avatarImg);
 			
-			if(this.player == gView.sessionPlayer) {
+			if(this.playerName == gView.sessionPlayer.name) {
 				// calc the avatar pos for this player
 				x = avatarImg.width*2.5;
 				y = gView.viewSize.height - avatarImg.height/2 - gView.margin;
