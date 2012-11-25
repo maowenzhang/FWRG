@@ -264,6 +264,23 @@ function GameView(paper) {
 					playerView.updateCardsView();
 				}
 				
+				if(data.gameState.lastCards.length == 0 && self.lastCardObjs.length > 0)
+				{
+					// start a new game, clear last under cards
+					for(var i = 0; i<self.lastCardObjs.length; ++i)
+						self.lastCardObjs[i].remove();
+					self.lastCardObjs.splice(0, self.lastCardObjs.length);
+				}
+				
+				// also remove the out cards in the middle of the view
+				if(playerView.outCardObjs.length > 0)
+				{
+					for(var i = 0; i < playerView.outCardObjs.length; ++i)
+						playerView.outCardObjs[i].remove();
+					playerView.outCardObjs.splice(0, playerView.outCardObjs.length);
+					playerView.lastOutCards.splice(0, playerView.lastOutCards.length);
+				}
+				
 				// draw remain cards for each view at top
 				if(data.gameState.lastCards.length > 0 && self.lastCardObjs.length == 0)
 				{
@@ -313,7 +330,7 @@ function GameView(paper) {
 				
 				playerView.translateCards();
 				playerView.sortCards();
-				playerView.updatePlayerView(data.gameState.outCards);				
+				playerView.updatePlayerView(data.gameState.outCards);			
 			}
 		}
 	}
@@ -355,7 +372,6 @@ function GameView(paper) {
 		this.cardObjects = [];
 		var gView = gameView;
 		this.avatarObject = {};
-		this.avatarPosition = {};
 		this.refVec = {};
 		this.btnObjects = [];
 		this.outCardObjs = [];
@@ -409,20 +425,18 @@ function GameView(paper) {
 				fontSize: 12,
 				fillColor: 'white',
 			};
-
-			// draw a avartar to represent the lord if the play is lord.
-			this.drawLordFlag();
+			
+			this.nameObject = playerName;
 			this.avatarObject = avatar;
 			this.refVec = refVec;
-			this.avatarPosition = avatarPos;
-			this.nameObject = playerName;
+			// draw a avartar to represent the lord if the play is lord
+			this.drawLordFlag();
 		}
 		
 		this.drawLordFlag = function()
 		{
-			/*if(this.player.isLord && !this.lordObject && this.avatarObject && this.avatarPosition && this.refVec)
-				this.lordObject = _drawLordFlag(this.avatarPosition, this.refVec);
-				*/
+			if(this.player.isLord && !this.lordObject && this.avatarObject && this.refVec)
+				this.lordObject = _drawLordFlag(this.avatarObject.position, this.refVec);
 		}
 		
 		// call this function to draw view when deliver card to this player or chupai
@@ -538,9 +552,12 @@ function GameView(paper) {
 					this.updatePlayerView(selectedCards);
 					this.sortCards();
 					this.clearButtons();
-					
+
 					// Send the signal to server
 					sendPlayedCards(this.player.name, selectedCards);
+						
+					if(this.player.cards.length == 0)
+						startNewGame(this.player.name);
 				}
 			}
 		}

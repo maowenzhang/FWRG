@@ -174,6 +174,52 @@ io.on('connection', function (socket) {
 			// TODO: reset the game state by the game state name
 			var gsName = data;
 			gs.restartGame();
+			
+			// try to start the game and deliver cards..
+            if (gs.tryStartGame()) {
+                console.log(gs.deck.cards);
+                var remainCards = 3;
+                var curPlayer = 0;
+                var cards = gs.deck.cards;
+				var eventdata;
+                while (cards.length > 0) {
+                    console.log(curPlayer);
+                    player = gs.getPlayerByIndex(curPlayer++);
+                    if (!player) {
+                        console.log('invalid player');
+                        break;
+                    }
+					
+					if(cards.length == remainCards)
+					{
+						player = gs.lordPlayer();
+						for(var i = 0; i < remainCards; ++i)
+						{
+							player.cards.push(cards[i]);
+							gs.lastCards.push(cards[i]);
+						}
+						cards.splice(0, cards.length);
+					}
+                    else if (cards.length > remainCards) {
+                        player.cards[player.cards.length] = cards[0];
+                        cards.splice(0, 1);
+                        //console.log(cards.length);
+                    }
+
+					gs.activePlayer = player;
+                    eventdata = new EventData("deliverCard", gs);
+                    updateFromServerToClients(socket, eventdata);
+
+                    if (curPlayer > 2) curPlayer = 0;
+                }
+
+				// The lord will be the first active player. He will start the first round.
+				gs.activePlayer = gs.lordPlayer();
+				// Let client know we have finished the cards deliver.
+				eventdata = new EventData("endDeliverCards", gs);
+				updateFromServerToClients(socket, eventdata);
+            }
+			return;
 		}
 
         var eventdata = new EventData(type, gs);
