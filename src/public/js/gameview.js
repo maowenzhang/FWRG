@@ -237,7 +237,6 @@ function GameView(paper) {
 			}
 			else
 			{
-				//important update view if necessary
 				playerView.player = player;
 			}
 		}
@@ -306,11 +305,15 @@ function GameView(paper) {
 			for(var i = 0; i < self.playerViews.length; ++i)
 			{
 				var playerView = self.playerViews[i];
-				playerView.updatePlayerView(data.gameState.outCards);
+				
 				if(self.sessionPlayer.name == playerView.playerName)
 				{
 					self.sessionPlayer = playerView.player;
 				}
+				
+				playerView.translateCards();
+				playerView.sortCards();
+				playerView.updatePlayerView(data.gameState.outCards);				
 			}
 		}
 	}
@@ -352,9 +355,11 @@ function GameView(paper) {
 		this.cardObjects = [];
 		var gView = gameView;
 		this.avatarObject = {};
+		this.avatarPosition = {};
 		this.refVec = {};
 		this.btnObjects = [];
 		this.outCardObjs = [];
+		this.lastOutCards = [];
 		// draw profile -
 		// name
 		// profile
@@ -409,13 +414,15 @@ function GameView(paper) {
 			this.drawLordFlag();
 			this.avatarObject = avatar;
 			this.refVec = refVec;
+			this.avatarPosition = avatarPos;
 			this.nameObject = playerName;
 		}
 		
 		this.drawLordFlag = function()
 		{
-			if(this.player.isLord && !this.lordObject && this.avatarObject)
-				this.lordObject = _drawLordFlag(this.avatarObject.position, this.refVec);
+			/*if(this.player.isLord && !this.lordObject && this.avatarObject && this.avatarPosition && this.refVec)
+				this.lordObject = _drawLordFlag(this.avatarPosition, this.refVec);
+				*/
 		}
 		
 		// call this function to draw view when deliver card to this player or chupai
@@ -430,6 +437,7 @@ function GameView(paper) {
 			{
 				drawCard(this, cards[i], i+1);
 			}
+			view.draw();
 		}
 		
 		// this function is used for play cards
@@ -482,23 +490,53 @@ function GameView(paper) {
 					if(outCards.length > 0)
 					{
 						var clientOutCards = transServerCards(outCards);
-						var lastSuitpattern = (new SuitPattern(clientOutCards));
-						var validPattern = suitpattern.IsLargerThan(lastSuitpattern);
-						// check if it's good to play
-						if(validPattern <= 0)
-							return;
+						var needCheckPattern = true;
+						if(this.lastOutCards.length == clientOutCards.length)
+						{
+							var matched = false;
+							for(var i = 0; i < clientOutCards.length; ++i)
+							{
+								matched = false;
+								for(var j = 0; j < this.lastOutCards.length; ++j)
+								{
+									if(clientOutCards[i].id == this.lastOutCards[j].id)
+									{
+										matched = true;
+										break;
+									}
+								}
+								if(!matched)
+								{
+									// not found
+									break;
+								}
+							}
+							
+							if(matched)
+							{
+								needCheckPattern = false;
+							}
+						}
+						if(needCheckPattern)
+						{
+							var lastSuitpattern = (new SuitPattern(clientOutCards));
+							var validPattern = suitpattern.IsLargerThan(lastSuitpattern);
+							// check if it's good to play
+							if(validPattern <= 0)
+								return;
+						}
 					}
-					
+					this.lastOutCards.splice(0, this.lastOutCards.length);
 					for(var i = 0; i < selectedCards.length; ++i)
 					{
 						this.player.cards.remove(selectedCards[i]);
+						this.lastOutCards.push(selectedCards[i]);
 					}
 						
 					// find a good one, play it
 					gView.gameState.activePlayer = {}; // reset it
 					this.updatePlayerView(selectedCards);
 					this.sortCards();
-					this.updateCardsView();
 					this.clearButtons();
 					
 					// Send the signal to server

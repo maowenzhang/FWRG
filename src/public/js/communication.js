@@ -1,4 +1,4 @@
-var socket = io.connect('http://10.147.10.46:8080');
+var socket = io.connect('http://localhost:8080');
 
 function GameSession() {
 	this.view = null; // game view..

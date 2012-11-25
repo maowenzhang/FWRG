@@ -193,11 +193,12 @@ SuitPattern.prototype.IsTrebleWithSingle = function () {
 SuitPattern.prototype.IsTrebleWithDouble = function () {
     if (this.cards.length != 5)
         return false;
-
+	
+	// 3-3-3: 5-5
     if (this.cards[0].rank == this.cards[1].rank && this.cards[1].rank == this.cards[2].rank && this.cards[3].rank == this.cards[4].rank)
         return true;
-
-    if (this.cards[1].rank == this.cards[2].rank && this.cards[3].rank == this.cards[4].rank && this.cards[4].rank == this.cards[5].rank) {
+	// 3-3: 5-5-5
+    if (this.cards[0].rank == this.cards[1].rank && this.cards[2].rank == this.cards[3].rank && this.cards[3].rank == this.cards[4].rank) {		
         var temp = this.cards[0]; this.cards[0] = this.cards[4]; this.cards[4] = temp; // Swap
         var temp2 = this.cards[1]; this.cards[1] = this.cards[3]; this.cards[3] = temp2; // Swap
         return true;

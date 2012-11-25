@@ -151,6 +151,21 @@ io.on('connection', function (socket) {
 		{
 			var cards = data.cards;
 			player = gs.getPlayer(playerName);
+
+			for(var i = 0; i < cards.length; ++i)
+			{
+				for(var j = 0; j < player.cards.length; ++j)
+				{
+					if(cards[i].id == player.cards[j].id)
+					{
+						var index = player.cards.indexOf(player.cards[j]);
+						if (index > -1)
+							player.cards.splice(index, 1);
+						break;
+					}
+				}
+			}
+			
 			gs.activePlayer = gs.getPlayer(player.rightPlayer);
 			gs.outCards = cards;
 			console.log('play cards by ' + playerName);
