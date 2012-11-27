@@ -408,7 +408,7 @@ SuitPattern.prototype.IsRockets = function () {
     if (this.cards.length != 2)
         return false;
 
-    if (this.cards[0].suit == 5 && this.cards[1].suit == 5 && this.cards[0].rank  == 16 && this.cards[1].rank = 17)
+    if (this.cards[0].suit == 5 && this.cards[1].suit == 5 && this.cards[0].rank  == 16 && this.cards[1].rank == 17)
         return true;
 
     return false;
