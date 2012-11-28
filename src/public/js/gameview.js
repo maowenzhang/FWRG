@@ -496,7 +496,7 @@ function GameView(paper) {
 				var selectedCards = this.selectedCards();
 				if(selectedCards.length > 0)
 				{
-					var suitpattern = (new SuitPattern(selectedCards));
+					var suitpattern = new SuitPattern(selectedCards);
 					if (!suitpattern.IsValid())
 						return;
 					// if it's larger than the last play cards
