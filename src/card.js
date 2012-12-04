@@ -280,94 +280,75 @@ SuitPattern.prototype.IsTrebleWithSingleSequence = function () {
     if (this.cards.length < 8 || this.cards.length % 4 != 0)
         return false;
 	
-	var count = this.cards.length/4;
-	var isStartWith = true;
+	var length = this.cards.length;
+	var count = length/4;
+	var i=1;
+	while(i<length && (this.cards[0].rank != this.cards[1].rank || this.cards[1].rank != this.cards[2].rank){
+		var card = this.cards.shift();
+		this.cards.push(card);
+		i++;
+	}	
+		
+	var bValid = true;
     for (var i = 0; i < count; i+=3) {
         if (this.cards[i].rank != this.cards[i + 1].rank || this.cards[i].rank != this.cards[i + 2].rank){
-            isStartWith = false;
+            bValid = false;
 			break;
 		}
     }
 	for (var i = 0; i < count-1; i+=3) {
 		if (this.cards[i + 3].rank - this.cards[i].rank != 1){
-            isStartWith = false;
+            bValid = false;
 			break;
 		}
 	}
- 
-	var isEndWith = true;
-    for (var i = 0; i < count; i+=3) {
-        if (this.cards[count+i].rank != this.cards[count+i + 1].rank || this.cards[count+i].rank != this.cards[count+i + 2].rank){
-            isEndWith = false;
-			break;
+	if(bValid)
+		return true;
+	else {
+		this.cards = cards.sort(Card.orderByRank);
+		return false;
 		}
-    }
-	for (var i = 0; i < count-1; i+=3) {
-		if (this.cards[count+i + 3].rank - this.cards[count+i].rank != 1){
-            isEndWith = false;
-			break;
-		}
-	}
-	if(isEndWith){
-		for (var i = 0; i < count; i++) {
-			var card = this.cards.shift();
-			this.cards.push(card);
-		}	
-	}
-    return isStartWith || isEndWith;
 }
 
 SuitPattern.prototype.IsTrebleWithDoubleSequence = function () {
     if (this.cards.length < 10 || this.cards.length % 5 != 0)
         return false;
 	
-	var count = this.cards.length/5;
-	var isStartWith = true;
-    for (var i = 0; i < count; i+=3) {
-        if (this.cards[i].rank != this.cards[i + 1].rank || this.cards[i].rank != this.cards[i + 2].rank){
-            isStartWith = false;
+	var length = this.cards.length;
+	var count = length/5;
+	var i=1;
+	while(i<length && (this.cards[0].rank != this.cards[1].rank || this.cards[1].rank != this.cards[2].rank){
+		var card = this.cards.shift();
+		this.cards.push(card);
+		i++;
+	}	
+		
+	var bValid = true;
+    for (var i=0; i < count; i+=3) {
+        if (this.cards[i].rank != this.cards[i+1].rank || this.cards[i+1].rank != this.cards[i+2].rank){
+            bValid = false;
 			break;
 		}
 	}
     for (var i = 0; i < count; i+=2) {
        if (this.cards[i+3*count].rank != this.cards[i+3*count + 1].rank){
-            isStartWith = false;
+            bValid = false;
 			break;
 		}
     }
 	for (var i = 0; i < count-1; i+=3) {
 		if (this.cards[i + 3].rank - this.cards[i].rank != 1){
-            isStartWith = false;
+            bValid = false;
 			break;
 		}
 	}
  
-	var isEndWith = true;
-    for (var i = 0; i < count; i+=3) {
-        if (this.cards[count*2+i].rank != this.cards[count*2+i + 1].rank || this.cards[count*2+i].rank != this.cards[count*2+i + 2].rank){
-            isEndWith = false;
-			break;
+	if(bValid)
+		return true;
+	else {
+		this.cards = cards.sort(Card.orderByRank);
+		return false;
 		}
-    }
-    for (var i = 0; i < count; i+=2) {
- 	        if (this.cards[i].rank != this.cards[i + 1].rank){
-            isEndWith = false;
-			break;
-		}
-	}
-	for (var i = 0; i < count-1; i+=3) {
-		if (this.cards[count+i + 3].rank - this.cards[count+i].rank != 1){
-            isEndWith = false;
-			break;
-		}
-	}
-	if(isEndWith){
-		for (var i = 0; i < count*2; i++) {
-			var card = this.cards.shift();
-			this.cards.push(card);
-		}	
-	}
-    return isStartWith || isEndWith;
 }
 
 SuitPattern.prototype.IsFourWithTwo = function () {
