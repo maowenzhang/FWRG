@@ -283,7 +283,7 @@ SuitPattern.prototype.IsTrebleWithSingleSequence = function () {
 	var length = this.cards.length;
 	var count = length/4;
 	var i=1;
-	while(i<length && (this.cards[0].rank != this.cards[1].rank || this.cards[1].rank != this.cards[2].rank){
+	while(i<length && (this.cards[0].rank != this.cards[1].rank || this.cards[1].rank != this.cards[2].rank)){
 		var card = this.cards.shift();
 		this.cards.push(card);
 		i++;
@@ -317,7 +317,7 @@ SuitPattern.prototype.IsTrebleWithDoubleSequence = function () {
 	var length = this.cards.length;
 	var count = length/5;
 	var i=1;
-	while(i<length && (this.cards[0].rank != this.cards[1].rank || this.cards[1].rank != this.cards[2].rank){
+	while(i<length && (this.cards[0].rank != this.cards[1].rank || this.cards[1].rank != this.cards[2].rank)){
 		var card = this.cards.shift();
 		this.cards.push(card);
 		i++;
