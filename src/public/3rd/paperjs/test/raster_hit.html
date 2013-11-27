@@ -47,8 +47,6 @@
                     //Put the name of the hit object in the textarea, or if there was no
                     //detected object, put "null" instead.
                     $("#textoutput").val(hitObject ? hitObject.item.name : "null");
-					if(hitObject && hitObject.item)
-						hitObject.item.selected = !hitObject.item.selected;
                     console.log(hitObject);
 					console.log(event.point);
                 }
